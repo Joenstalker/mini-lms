@@ -1,149 +1,106 @@
-MINI Library Management System in Laravel using MVC Architecture 
-Description / Overview 
-In this activity, students will design and develop a Mini Library Management System using the Model–View
-Controller (MVC) architecture in Laravel. The system must implement authentication using Laravel Breeze, 
-manage users, students, books, and authors, and handle borrowing transactions with automated fine 
-computation. 
-This activity evaluates students' ability to: 
- Apply Laravel MVC architecture properly 
- Implement relational database design 
- Use migrations, models, controllers, routes, and views correctly 
- Apply authentication scaffolding (Breeze) 
- Implement business logic such as borrowing, returning, and fine computation 
- Design a clean and user-friendly interface using a frontend framework 
-System Requirements & Features 
-1. Authentication 
- Implement authentication using Laravel Breeze. 
- Users can: 
- Login 
- Change password 
- No Role-Based Access Control (RBAC) required. 
-2. Student Module 
- Students are NOT required to log in. 
- A student: 
- Can borrow multiple books. 
- Can return all books or partial books. 
- Must be charged a fine of ₱10 per day per book if overdue. 
-3. Books Module 
- Must display: 
- List of all books 
- Available inventory count 
- A book: 
- Can have multiple authors. 
- Must track borrowing availability. 
-4. Authors Module 
- Authors must be created in this module. 
- A book can be associated with multiple authors. 
- Use proper Many-to-Many relationship. 
-5. Business Logic Requirements 
- Borrow date and due date must be recorded. 
- Fine = ₱10 × number of overdue days × number of books. 
- Partial return must update: 
- Book inventory 
- Borrow record 
- Fine computation (if applicable) 
-6. Design Requirements 
- Must use a frontend framework (Bootstrap, Tailwind, etc.). 
- Layout must be: 
- Clean 
- Organized 
- Responsive 
- Customized according to system purpose 
- Avoid default plain scaffold output only. 
-Technical Expectations 
- Students must properly demonstrate: 
- Migrations with correct foreign keys 
- Eloquent relationships: 
- One-to-Many 
- Many-to-Many 
- Controllers with clean logic 
- Proper validation 
- RESTful routing 
- Organized folder structure 
- Clean code practices
+# MINI Library Management System
 
-Rubrics
+A modern, high-end Library Management System built with Laravel using the MVC architecture. This system features a stunning student-facing catalog, AJAX-driven administrator controls, and automated fine computation.
 
-Performance 
-Indicator 
+---
 
-1. Proper MVC 
-Separation   
+## 🚀 Getting Started
 
-Clear 
-separation of 
-Models, Views, 
-Controllers; no 
-business logic 
-inside views  
+Follow these steps to get the project up and running on your local machine.
 
-2. Routing & 
-Controller 
-Design 
+### 1. Prerequisites
+Ensure you have the following installed:
+- **PHP 8.2+**
+- **Composer**
+- **Node.js & NPM**
+- **SQLite** (or any database of your choice)
 
-RESTful 
-routing; clean 
-and organized 
-controllers 
+### 2. Installation
 
-3. Code 
-Organization 
-& Naming 
-Conventions 
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Joenstalker/mini-lms.git
+   cd mini-lms
+   ```
 
-Follows 
-Laravel 
-standards and 
-clean code 
-principles 
+2. **Install PHP Dependencies**
+   ```bash
+   composer install
+   ```
 
-4. Validation & 
-Error Handling 
+3. **Install Frontend Dependencies**
+   ```bash
+   npm install
+   ```
 
-Proper 
-validation, no 
-system crashes, 
-user-friendly 
-errors
+4. **Environment Setup**
+   Copy the example environment file and generate an application key:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   *Note: By default, the project is configured to use SQLite. Ensure your `.env` has `DB_CONNECTION=sqlite`.*
 
-5. Authentication 
-(Laravel 
-Breeze)
+5. **Run Migrations & Seeders**
+   This will set up the database schema and populate it with sample books, authors, and students.
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
 
-Fully 
-functional 
-login & 
-password 
-management 
+6. **Build Frontend Assets**
+   ```bash
+   npm run build
+   ```
 
-6. Database 
-Management 
-& 
-Relationships
+7. **Start the Application**
+   ```bash
+   php artisan serve
+   ```
+   Visit `http://localhost:8000` in your browser.
 
-Correct 
-migrations, 
-foreign keys, 
-and many-to
-many 
-relationships 
+---
 
-7. Module 
-Implementatio
-n (Students, 
-Books, 
-Authors, 
-Transactions) 
+## 🔑 Default Credentials
 
-All modules 
-complete and 
-interconnected 
+### Administrator Login
+- **URL**: `http://localhost:8000/login`
+- **Email**: `test@example.com`
+- **Password**: `password`
 
-8. Design & 
-Responsivenes
-s
+### Sample Student PINs
+- Seeded students have a default PIN of `1234` for borrowing books.
 
-Clean, 
-responsive, 
-customized 
-design 
+---
+
+## ✨ Features
+
+- **Stunning Student Catalog**: A visually immersive, card-based interface with hero banners and real-time search.
+- **AJAX CRUD**: Seamless book management for administrators without page reloads.
+- **Smart Book Covers**: Automatic cover image assignment based on publishers during seeding.
+- **Automated Fines**: Real-time fine calculation (₱10/day) for overdue books during the return process.
+- **Fully Responsive**: Optimized for desktop, tablet, and mobile devices.
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework**: Laravel 11
+- **Authentication**: Laravel Breeze
+- **Styling**: Tailwind CSS & DaisyUI
+- **Interactivity**: Alpine.js & SweetAlert2
+- **Database**: Eloquent ORM (SQLite/MySQL/PostgreSQL)
+
+---
+
+## 📝 Activity Overview (MVC Assignment)
+
+This project implements:
+- **Models**: Proper relational design (Many-to-Many for Books-Authors, One-to-Many for Students-Transactions).
+- **Controllers**: Clean logic for borrowing, returns, and inventory management.
+- **Views**: High-end Blade templates with interactive Alpine.js components.
+- **Business Logic**: Fine computation: `Fine = ₱10 × overdue_days × quantity`.
+
+---
+
+## 👤 Author
+Developed as part of the Laravel MVC Architecture evaluation.
