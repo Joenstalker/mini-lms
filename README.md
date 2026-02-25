@@ -46,6 +46,11 @@ Ensure you have the following installed:
    ```bash
    php artisan migrate:fresh --seed
    ```
+   *Or separately:*
+   ```bash
+   php artisan migrate
+   php artisan db:seed
+   ```
 
 6. **Build Frontend Assets**
    ```bash
