@@ -1,59 +1,147 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+MINI Library Management System in Laravel using MVC Architecture 
+Description / Overview 
+In this activity, students will design and develop a Mini Library Management System using the Model–View
+Controller (MVC) architecture in Laravel. The system must implement authentication using Laravel Breeze, 
+manage users, students, books, and authors, and handle borrowing transactions with automated fine 
+computation. 
+This activity evaluates students' ability to: 
+ Apply Laravel MVC architecture properly 
+ Implement relational database design 
+ Use migrations, models, controllers, routes, and views correctly 
+ Apply authentication scaffolding (Breeze) 
+ Implement business logic such as borrowing, returning, and fine computation 
+ Design a clean and user-friendly interface using a frontend framework 
+System Requirements & Features 
+1. Authentication 
+ Implement authentication using Laravel Breeze. 
+ Users can: 
+ Login 
+ Change password 
+ No Role-Based Access Control (RBAC) required. 
+2. Student Module 
+ Students are NOT required to log in. 
+ A student: 
+ Can borrow multiple books. 
+ Can return all books or partial books. 
+ Must be charged a fine of ₱10 per day per book if overdue. 
+3. Books Module 
+ Must display: 
+ List of all books 
+ Available inventory count 
+ A book: 
+ Can have multiple authors. 
+ Must track borrowing availability. 
+4. Authors Module 
+ Authors must be created in this module. 
+ A book can be associated with multiple authors. 
+ Use proper Many-to-Many relationship. 
+5. Business Logic Requirements 
+ Borrow date and due date must be recorded. 
+ Fine = ₱10 × number of overdue days × number of books. 
+ Partial return must update: 
+ Book inventory 
+ Borrow record 
+ Fine computation (if applicable) 
+6. Design Requirements 
+ Must use a frontend framework (Bootstrap, Tailwind, etc.). 
+ Layout must be: 
+ Clean 
+ Organized 
+ Responsive 
+ Customized according to system purpose 
+ Avoid default plain scaffold output only. 
+Technical Expectations 
+ Students must properly demonstrate: 
+ Migrations with correct foreign keys 
+ Eloquent relationships: 
+ One-to-Many 
+ Many-to-Many 
+ Controllers with clean logic 
+ Proper validation 
+ RESTful routing 
+ Organized folder structure 
+ Clean code practices
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Performance 
+Indicator 
 
-## About Laravel
+1. Proper MVC 
+Separation   
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Clear 
+separation of 
+Models, Views, 
+Controllers; no 
+business logic 
+inside views  
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+2. Routing & 
+Controller 
+Design 
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+RESTful 
+routing; clean 
+and organized 
+controllers 
 
-## Learning Laravel
+3. Code 
+Organization 
+& Naming 
+Conventions 
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Follows 
+Laravel 
+standards and 
+clean code 
+principles 
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+4. Validation & 
+Error Handling 
 
-## Laravel Sponsors
+Proper 
+validation, no 
+system crashes, 
+user-friendly 
+errors
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+5. Authentication 
+(Laravel 
+Breeze)
 
-### Premium Partners
+Fully 
+functional 
+login & 
+password 
+management 
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+6. Database 
+Management 
+& 
+Relationships
 
-## Contributing
+Correct 
+migrations, 
+foreign keys, 
+and many-to
+many 
+relationships 
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+7. Module 
+Implementatio
+n (Students, 
+Books, 
+Authors, 
+Transactions) 
 
-## Code of Conduct
+All modules 
+complete and 
+interconnected 
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+8. Design & 
+Responsivenes
+s
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Clean, 
+responsive, 
+customized 
+design 

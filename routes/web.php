@@ -7,8 +7,12 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\BorrowTransactionController;
 use Illuminate\Support\Facades\Route;
 
-// Public route to view all books
+// Public routes
 Route::get('/', [BookController::class, 'index'])->name('home');
+Route::get('books', [BookController::class, 'index'])->name('books.index');
+Route::get('books/{book}', [BookController::class, 'show'])->name('books.show');
+Route::get('authors', [AuthorController::class, 'index'])->name('authors.index');
+Route::get('authors/{author}', [AuthorController::class, 'show'])->name('authors.show');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
@@ -26,10 +30,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('students', StudentController::class);
 
     // Author Management
-    Route::resource('authors', AuthorController::class);
+    Route::resource('authors', AuthorController::class)->except(['index', 'show']);
 
     // Book Management
-    Route::resource('books', BookController::class);
+    Route::resource('books', BookController::class)->except(['index', 'show']);
 
     // Borrow Transaction Management
     Route::resource('borrow-transactions', BorrowTransactionController::class);
