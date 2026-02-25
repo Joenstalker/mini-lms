@@ -13,10 +13,28 @@ class BorrowTransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $transactions = BorrowTransaction::with('student', 'book')->paginate(15);
-        return view('borrow-transactions.index', compact('transactions'));
+        $search = $request->input('search');
+        $query = BorrowTransaction::with('student', 'book');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('student', function($sq) use ($search) {
+                    $sq->where('name', 'like', "%{$search}%");
+                })->orWhereHas('book', function($bq) use ($search) {
+                    $bq->where('title', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        $transactions = $query->paginate(15)->withQueryString();
+
+        if ($request->ajax()) {
+            return view('borrow-transactions.partials.table', compact('transactions'))->render();
+        }
+
+        return view('borrow-transactions.index', compact('transactions', 'search'));
     }
 
     /**
@@ -37,9 +55,18 @@ class BorrowTransactionController extends Controller
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'book_id' => 'required|exists:books,id',
+            'pin' => 'required|string',
             'quantity_borrowed' => 'required|integer|min:1',
             'due_date' => 'required|date|after:today',
         ]);
+
+        $student = Student::findOrFail($validated['student_id']);
+
+        if ($student->pin !== $validated['pin']) {
+            return redirect()->back()
+                ->withErrors(['pin' => 'Security PIN mismatch. Please check your PIN and try again.'])
+                ->withInput();
+        }
 
         $book = Book::find($validated['book_id']);
 

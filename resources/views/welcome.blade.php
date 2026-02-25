@@ -4,31 +4,26 @@
         <section class="relative">
             <div class="flex flex-col lg:flex-row items-center gap-12">
                 <div class="flex-1 space-y-8 text-center lg:text-left">
-                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold tracking-wide animate-bounce">
-                        <span class="relative flex h-3 w-3">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-                        </span>
-                        New: Digital Library Access
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 text-primary text-xs font-bold tracking-widest uppercase">
+                        Digital Library Access
                     </div>
-                    <h1 class="text-6xl md:text-7xl font-extrabold leading-[1.1] tracking-tight">
-                        Revolutionize Your <br>
-                        <span class="gradient-text">Library Experience</span>
+                    <h1 class="text-6xl md:text-7xl font-black leading-tight tracking-tighter text-base-content">
+                        Modernize Your <br>
+                        <span class="text-primary">Library Flow</span>
                     </h1>
-                    <p class="text-xl text-base-content/60 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                        Mini-LMS provides a modern, intuitive platform to manage, track, and explore your book collection with ease and intelligence.
+                    <p class="text-xl text-base-content/50 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                        Mini-LMS provides a minimalist, professional platform to manage, track, and explore your book collection with ease.
                     </p>
                     <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
-                        <a href="{{ route('books.index') }}" class="btn btn-primary btn-lg rounded-2xl px-8 shadow-xl shadow-primary/30 hover:scale-105 transition-all">
+                        <a href="{{ route('books.index') }}" class="btn btn-primary btn-lg rounded-xl px-10 shadow-md">
                             Explore Catalog
-                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7-7 7"></path></svg>
                         </a>
                         @guest
-                            <a href="{{ route('register') }}" class="btn btn-outline btn-lg rounded-2xl px-8 hover:bg-base-200">
+                            <a href="{{ route('register') }}" class="btn btn-outline btn-lg rounded-xl px-10">
                                 Get Started
                             </a>
                         @else
-                            <a href="{{ route('dashboard') }}" class="btn btn-outline btn-lg rounded-2xl px-8 hover:bg-base-200">
+                            <a href="{{ route('dashboard') }}" class="btn btn-outline btn-lg rounded-xl px-10">
                                 Dashboard
                             </a>
                         @endguest
@@ -37,29 +32,10 @@
                 
                 <div class="flex-1 relative w-full max-w-lg lg:max-w-none">
                     <div class="aspect-square relative flex items-center justify-center">
-                        <div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-full blur-[80px] animate-pulse"></div>
-                        <div class="relative glass-card p-1 translate-y-6">
-                            <div class="bg-base-100 rounded-2xl overflow-hidden shadow-2xl">
-                                <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=800" alt="Library" class="w-full h-auto grayscale-[0.2] hover:grayscale-0 transition-all duration-700">
-                                <div class="p-8 space-y-4">
-                                    <div class="flex gap-2">
-                                        <div class="h-2 w-16 bg-primary/20 rounded-full"></div>
-                                        <div class="h-2 w-8 bg-secondary/20 rounded-full"></div>
-                                    </div>
-                                    <div class="h-4 w-3/4 bg-base-300 rounded-full"></div>
-                                    <div class="h-4 w-1/2 bg-base-200 rounded-full"></div>
-                                </div>
+                        <div class="relative bg-base-100 rounded-[2.5rem] p-4 border border-base-200 shadow-premium">
+                            <div class="bg-base-200 rounded-[2rem] overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=800" alt="Library" class="w-full h-auto grayscale transition-all duration-700 hover:grayscale-0">
                             </div>
-                        </div>
-                        <div class="absolute -top-12 -left-12 glass-card p-6 shadow-2xl animate-float">
-                            <div class="text-4xl">📚</div>
-                            <div class="mt-2 text-xl font-bold">12k+ Books</div>
-                            <div class="text-xs opacity-50">Cataloged Daily</div>
-                        </div>
-                        <div class="absolute -bottom-6 -right-6 glass-card p-6 shadow-2xl animate-float" style="animation-delay: -2s;">
-                            <div class="text-4xl">👥</div>
-                            <div class="mt-2 text-xl font-bold">5k+ Users</div>
-                            <div class="text-xs opacity-50">Active Readers</div>
                         </div>
                     </div>
                 </div>
@@ -68,47 +44,35 @@
 
         <!-- Stats Grid -->
         <section class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
-                <div class="text-base-content/40 text-sm font-bold uppercase tracking-widest mb-4">Total Inventory</div>
+            <div class="bg-base-200 p-8 rounded-3xl border border-base-300">
+                <div class="text-[10px] font-bold uppercase tracking-widest mb-4 opacity-40">Total Inventory</div>
                 <div class="flex items-end gap-2">
-                    <span class="text-4xl font-extrabold">{{ \App\Models\Book::count() }}</span>
-                    <span class="text-primary text-lg font-bold mb-1">Books</span>
-                </div>
-                <div class="w-full h-1 bg-primary/10 rounded-full mt-4 overflow-hidden">
-                    <div class="h-full bg-primary w-2/3 group-hover:w-full transition-all duration-1000"></div>
+                    <span class="text-4xl font-black">{{ \App\Models\Book::count() }}</span>
+                    <span class="text-primary text-sm font-bold mb-1">Books</span>
                 </div>
             </div>
 
-            <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
-                <div class="text-base-content/40 text-sm font-bold uppercase tracking-widest mb-4">Active Members</div>
+            <div class="bg-base-200 p-8 rounded-3xl border border-base-300">
+                <div class="text-[10px] font-bold uppercase tracking-widest mb-4 opacity-40">Active Members</div>
                 <div class="flex items-end gap-2">
-                    <span class="text-4xl font-extrabold">{{ \App\Models\Student::count() }}</span>
-                    <span class="text-secondary text-lg font-bold mb-1">Users</span>
-                </div>
-                <div class="w-full h-1 bg-secondary/10 rounded-full mt-4 overflow-hidden">
-                    <div class="h-full bg-secondary w-1/2 group-hover:w-full transition-all duration-1000"></div>
+                    <span class="text-4xl font-black">{{ \App\Models\Student::count() }}</span>
+                    <span class="text-primary text-sm font-bold mb-1">Users</span>
                 </div>
             </div>
 
-            <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
-                <div class="text-base-content/40 text-sm font-bold uppercase tracking-widest mb-4">Writers</div>
+            <div class="bg-base-200 p-8 rounded-3xl border border-base-300">
+                <div class="text-[10px] font-bold uppercase tracking-widest mb-4 opacity-40">Writers</div>
                 <div class="flex items-end gap-2">
-                    <span class="text-4xl font-extrabold">{{ \App\Models\Author::count() }}</span>
-                    <span class="text-accent text-lg font-bold mb-1">Authors</span>
-                </div>
-                <div class="w-full h-1 bg-accent/10 rounded-full mt-4 overflow-hidden">
-                    <div class="h-full bg-accent w-3/4 group-hover:w-full transition-all duration-1000"></div>
+                    <span class="text-4xl font-black">{{ \App\Models\Author::count() }}</span>
+                    <span class="text-primary text-sm font-bold mb-1">Authors</span>
                 </div>
             </div>
 
-            <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
-                <div class="text-base-content/40 text-sm font-bold uppercase tracking-widest mb-4">Pending Loans</div>
+            <div class="bg-base-200 p-8 rounded-3xl border border-base-300">
+                <div class="text-[10px] font-bold uppercase tracking-widest mb-4 opacity-40">Active Loans</div>
                 <div class="flex items-end gap-2">
-                    <span class="text-4xl font-extrabold">{{ \App\Models\BorrowTransaction::whereNull('returned_at')->count() }}</span>
-                    <span class="text-error text-lg font-bold mb-1">Active</span>
-                </div>
-                <div class="w-full h-1 bg-error/10 rounded-full mt-4 overflow-hidden">
-                    <div class="h-full bg-error w-1/3 group-hover:w-full transition-all duration-1000"></div>
+                    <span class="text-4xl font-black">{{ \App\Models\BorrowTransaction::whereNull('returned_at')->count() }}</span>
+                    <span class="text-error text-sm font-bold mb-1">Loans</span>
                 </div>
             </div>
         </section>
@@ -116,27 +80,27 @@
         <!-- Features -->
         <section class="space-y-12">
             <div class="text-center space-y-4">
-                <h2 class="text-4xl font-bold">Comprehensive <span class="text-primary">Features</span></h2>
-                <p class="text-base-content/60 max-w-xl mx-auto">Everything you need to run a modern library, designed for efficiency and ease of use.</p>
+                <h2 class="text-4xl font-black">Core Features</h2>
+                <p class="text-base-content/50 max-w-xl mx-auto font-medium">Professional grade library management without the clutter.</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass-card p-10 hover:bg-primary hover:text-primary-content transition-all duration-500 group">
-                    <div class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl mb-8 group-hover:bg-white/20">📖</div>
-                    <h3 class="text-2xl font-bold mb-4">Smart Inventory</h3>
-                    <p class="opacity-70 leading-relaxed">Advanced tracking of books with real-time availability, multiple authors support, and ISBN integration.</p>
+                <div class="bg-base-100 p-10 rounded-[2rem] border border-base-200 hover:border-primary/30 transition-all group">
+                    <div class="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-2xl mb-8">📖</div>
+                    <h3 class="text-2xl font-bold mb-4 group-hover:text-primary transition-colors">Smart Inventory</h3>
+                    <p class="opacity-50 leading-relaxed text-sm font-medium">Advanced tracking of books with real-time availability and ISSN integration.</p>
                 </div>
 
-                <div class="glass-card p-10 hover:bg-secondary hover:text-secondary-content transition-all duration-500 group">
-                    <div class="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center text-3xl mb-8 group-hover:bg-white/20">⚡</div>
-                    <h3 class="text-2xl font-bold mb-4">Automated Loans</h3>
-                    <p class="opacity-70 leading-relaxed">Simplified borrowing process with automated fine calculation (₱10/day) and overdue notifications.</p>
+                <div class="bg-base-100 p-10 rounded-[2rem] border border-base-200 hover:border-primary/30 transition-all group">
+                    <div class="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-2xl mb-8">⚡</div>
+                    <h3 class="text-2xl font-bold mb-4 group-hover:text-primary transition-colors">Automated Flow</h3>
+                    <p class="opacity-50 leading-relaxed text-sm font-medium">Simplified borrowing process and automated fine calculation built for efficiency.</p>
                 </div>
 
-                <div class="glass-card p-10 hover:bg-neutral hover:text-neutral-content transition-all duration-500 group">
-                    <div class="w-14 h-14 rounded-2xl bg-neutral/10 flex items-center justify-center text-3xl mb-8 group-hover:bg-white/20">📊</div>
-                    <h3 class="text-2xl font-bold mb-4">Admin Insights</h3>
-                    <p class="opacity-70 leading-relaxed">Comprehensive dashboard with statistics on books, students, and transaction history for better management.</p>
+                <div class="bg-base-100 p-10 rounded-[2rem] border border-base-200 hover:border-primary/30 transition-all group">
+                    <div class="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-2xl mb-8">📊</div>
+                    <h3 class="text-2xl font-bold mb-4 group-hover:text-primary transition-colors">Admin Insights</h3>
+                    <p class="opacity-50 leading-relaxed text-sm font-medium">Clean, professional dashboard with real-time analytics for better management.</p>
                 </div>
             </div>
         </section>
@@ -217,8 +181,8 @@
 
         <!-- CTA -->
         @guest
-            <section class="relative rounded-[2.5rem] overflow-hidden bg-neutral text-neutral-content p-12 md:p-24 shadow-2xl">
-                <div class="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-secondary/20"></div>
+            <section class="relative rounded-[2.5rem] overflow-hidden bg-slate-900 text-white p-12 md:p-24 shadow-2xl border border-white/5">
+                <div class="absolute inset-0 bg-primary/5"></div>
                 <div class="relative z-10 text-center space-y-8 max-w-3xl mx-auto">
                     <h2 class="text-4xl md:text-5xl font-extrabold">Ready to modernize your library?</h2>
                     <p class="text-lg opacity-70 leading-relaxed">Join hundreds of library managers who have already simplified their daily operations with Mini-LMS.</p>

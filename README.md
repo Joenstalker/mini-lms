@@ -62,6 +62,8 @@ Technical Expectations
  Organized folder structure 
  Clean code practices
 
+Rubrics
+
 Performance 
 Indicator 
 

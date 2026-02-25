@@ -16,11 +16,6 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased bg-base-100 text-base-content selection:bg-primary selection:text-primary-content">
-        <!-- Background Decoration -->
-        <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-            <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px]"></div>
-            <div class="absolute top-[20%] -right-[5%] w-[30%] h-[30%] bg-secondary/10 rounded-full blur-[100px]"></div>
-        </div>
 
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
             <div class="mb-8">
@@ -30,7 +25,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>
                         </svg>
                     </div>
-                    <span class="text-3xl font-bold tracking-tight gradient-text">Mini-LMS</span>
+                    <span class="text-3xl font-bold tracking-tight text-primary">Mini-LMS</span>
                 </a>
             </div>
 

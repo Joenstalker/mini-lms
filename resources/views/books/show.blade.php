@@ -34,10 +34,6 @@
                     <h2 class="text-xl font-bold mb-4">Book Information</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <div class="text-sm opacity-50 mb-1">ISBN</div>
-                            <div class="font-mono font-semibold">{{ $book->isbn }}</div>
-                        </div>
-                        <div>
                             <div class="text-sm opacity-50 mb-1">Publisher</div>
                             <div class="font-semibold">{{ $book->publisher ?? 'N/A' }}</div>
                         </div>
@@ -97,15 +93,15 @@
                         <div class="text-xs opacity-50">{{ round(($book->available_quantity / $book->total_quantity) * 100) }}% available</div>
                     </div>
                     
-                    @auth
+                    @guest
                         @if ($book->available_quantity > 0)
-                            <a href="{{ route('borrow-transactions.create') }}?book_id={{ $book->id }}" class="btn btn-primary w-full mt-4">
+                            <a href="{{ route('borrow-transactions.create', ['book_id' => $book->id]) }}" class="btn btn-primary w-full mt-4 shadow-lg hover:shadow-primary/20 transition-all font-bold">
                                 Borrow This Book
                             </a>
                         @else
-                            <button disabled class="btn w-full mt-4 opacity-50">No Copies Available</button>
+                            <button disabled class="btn w-full mt-4 opacity-50 font-bold">No Copies Available</button>
                         @endif
-                    @endauth
+                    @endguest
                 </div>
 
                 <!-- Recent Borrows Card -->

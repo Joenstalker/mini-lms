@@ -5,11 +5,16 @@
                 <h1 class="text-3xl font-bold">Transaction Details</h1>
                 <p class="text-base-content/60 mt-2">Borrowing Record</p>
             </div>
-            @if ($borrowTransaction->status !== 'returned')
-                <a href="{{ route('borrow-transactions.edit', $borrowTransaction) }}" class="btn btn-primary">
-                    Return Books
-                </a>
-            @endif
+            <div class="flex gap-2">
+                <a href="{{ route('books.index') }}" class="btn btn-ghost">Back to Catalog</a>
+                @auth
+                    @if ($borrowTransaction->status !== 'returned')
+                        <a href="{{ route('borrow-transactions.edit', $borrowTransaction) }}" class="btn btn-primary px-8">
+                            Return Books
+                        </a>
+                    @endif
+                @endauth
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -21,23 +26,25 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="text-sm opacity-50 mb-1">Student</label>
-                            <a href="{{ route('students.show', $borrowTransaction->student) }}" class="link link-primary font-semibold">
-                                {{ $borrowTransaction->student->name }}
-                            </a>
+                            @auth
+                                <a href="{{ route('students.show', $borrowTransaction->student) }}" class="link link-primary font-semibold block">
+                                    {{ $borrowTransaction->student->name }}
+                                </a>
+                            @else
+                                <a href="{{ route('borrow-transactions.student-history', $borrowTransaction->student) }}" class="link link-primary font-semibold block">
+                                    {{ $borrowTransaction->student->name }}
+                                </a>
+                            @endauth
                         </div>
                         <div>
                             <label class="text-sm opacity-50 mb-1">Email</label>
-                            <div>{{ $borrowTransaction->student->email }}</div>
+                            <div class="font-medium">{{ $borrowTransaction->student->email }}</div>
                         </div>
                         <div>
-                            <label class="text-sm opacity-50 mb-1">Book</label>
-                            <a href="{{ route('books.show', $borrowTransaction->book) }}" class="link link-primary font-semibold">
+                            <label class="text-sm opacity-50 mb-1">Book Title</label>
+                            <a href="{{ route('books.show', $borrowTransaction->book) }}" class="link link-primary font-semibold block">
                                 {{ $borrowTransaction->book->title }}
                             </a>
-                        </div>
-                        <div>
-                            <label class="text-sm opacity-50 mb-1">ISBN</label>
-                            <div class="font-mono">{{ $borrowTransaction->book->isbn }}</div>
                         </div>
                         <div>
                             <label class="text-sm opacity-50 mb-1">Borrow Date</label>

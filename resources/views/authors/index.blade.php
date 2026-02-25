@@ -1,87 +1,160 @@
 <x-app-layout>
     <div class="space-y-6">
+    <div class="space-y-6" x-data="{ 
+        showCreateModal: false, 
+        showEditModal: false,
+        search: '{{ $search ?? '' }}',
+        isLoading: false,
+        editData: { id: '', name: '', bio: '' },
+        openEditModal(author) {
+            this.editData = { ...author };
+            this.showEditModal = true;
+        },
+        async performSearch() {
+            this.isLoading = true;
+            try {
+                const response = await fetch(`{{ route('authors.index') }}?search=${encodeURIComponent(this.search)}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const html = await response.text();
+                document.getElementById('authors-grid-content').innerHTML = html;
+                window.history.replaceState(null, null, `?search=${encodeURIComponent(this.search)}`);
+            } catch (error) {
+                console.error('Search failed:', error);
+            } finally {
+                this.isLoading = false;
+            }
+        }
+    }">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-primary via-primary/90 to-secondary text-primary-content rounded-2xl shadow-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="bg-base-200 text-base-content rounded-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-base-300">
             <div>
                 <h1 class="text-4xl font-bold">✍️ Authors Collection</h1>
-                <p class="text-lg opacity-90 mt-2">Browse and manage all book authors</p>
+                <p class="text-lg opacity-60 mt-2 font-medium">Browse and manage all book authors</p>
             </div>
-            <a href="{{ route('authors.create') }}" class="btn btn-secondary btn-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 4v16m8-8H4"></path>
+
+            <div class="flex-grow max-w-md w-full mx-0 md:mx-4">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <template x-if="!isLoading">
+                            <svg class="h-5 w-5 text-base-content/30 group-focus-within:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </template>
+                        <template x-if="isLoading">
+                            <span class="loading loading-spinner loading-xs text-primary"></span>
+                        </template>
+                    </div>
+                    <input 
+                        type="text" 
+                        x-model="search" 
+                        @input.debounce.500ms="performSearch()"
+                        placeholder="Search name or bio..." 
+                        class="input input-bordered w-full pl-12 bg-base-100/50 border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl h-14 transition-all"
+                    >
+                    <button 
+                        x-show="search.length > 0" 
+                        @click="search = ''; performSearch()" 
+                        class="absolute inset-y-0 right-0 pr-4 flex items-center text-base-content/30 hover:text-error transition-colors"
+                        style="display: none;"
+                    >
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button @click="showCreateModal = true" class="btn btn-primary btn-lg rounded-xl shadow-md transition-all shrink-0">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 Add Author
-            </a>
+            </button>
         </div>
 
         <!-- Authors Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @forelse ($authors as $author)
-                <div class="card bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-blue-300">
-                    <div class="card-body space-y-4">
-                        <div class="flex items-start gap-3">
-                            <div class="avatar placeholder">
-                                <div class="bg-primary text-primary-content rounded-full w-12 font-bold">
-                                    <span>{{ substr($author->name, 0, 1) }}</span>
-                                </div>
-                            </div>
-                            <div class="flex-1">
-                                <h2 class="card-title text-xl text-blue-900">{{ $author->name }}</h2>
-                                <p class="text-xs opacity-60">Author Profile</p>
-                            </div>
-                        </div>
-                        
-                        @if ($author->bio)
-                            <p class="text-sm text-blue-800 line-clamp-3 italic">{{ $author->bio }}</p>
-                        @else
-                            <p class="text-sm opacity-50 italic">No bio provided</p>
-                        @endif
-                        
-                        <div class="divider my-2"></div>
-                        
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.669 0-3.218.51-4.5 1.385A7.968 7.968 0 009 4.804z"></path></svg>
-                                <span class="badge badge-primary badge-lg font-bold">{{ $author->books->count() }}</span>
-                            </div>
-                            <span class="text-xs text-base-content/60">book{{ $author->books->count() !== 1 ? 's' : '' }}</span>
-                        </div>
-                        
-                        <div class="card-actions justify-end gap-2 mt-4">
-                            <a href="{{ route('authors.show', $author) }}" class="btn btn-sm btn-info btn-outline hover:btn-info transition-all duration-300">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
-                            </a>
-                            <a href="{{ route('authors.edit', $author) }}" class="btn btn-sm btn-warning btn-outline hover:btn-warning transition-all duration-300">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>
-                            </a>
-                            <form method="POST" action="{{ route('authors.destroy', $author) }}" class="inline" onsubmit="return confirm('Are you sure?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-error btn-outline hover:btn-error transition-all duration-300">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="col-span-full">
-                    <div class="bg-gradient-to-br from-base-200 to-base-300 rounded-2xl shadow-lg p-12 text-center">
-                        <div class="space-y-2">
-                            <div class="text-5xl">✍️</div>
-                            <p class="font-bold text-2xl text-base-content">No authors yet</p>
-                            <p class="text-base-content/70"><a href="{{ route('authors.create') }}" class="link link-primary font-semibold">Create your first author</a> to get started</p>
-                        </div>
-                    </div>
-                </div>
-            @endforelse
+        <div id="authors-grid-content">
+            @include('authors.partials.table')
         </div>
 
-        <!-- Pagination -->
-        <div class="flex justify-center">
-            <div class="join">
-                {{ $authors->links() }}
+        <!-- Create Modal -->
+        <div class="modal" :class="{ 'modal-open': showCreateModal }" style="background-color: rgba(0,0,0,0.5)">
+            <div class="modal-box max-w-xl rounded-[2rem] p-8 border border-white/10 shadow-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold">New Author</h3>
+                    <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost">✕</button>
+                </div>
+                <form action="{{ route('authors.store') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <div class="form-control">
+                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Author Name</span></label>
+                        <input type="text" name="name" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl" required placeholder="Author's full name">
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Biography</span></label>
+                        <textarea name="bio" class="textarea textarea-bordered focus:textarea-primary bg-base-200 border-base-300 rounded-xl h-32" placeholder="Brief biography of the author"></textarea>
+                    </div>
+                    <div class="modal-action mt-8">
+                        <button type="button" @click="showCreateModal = false" class="btn btn-ghost rounded-xl">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-xl px-8">Save Author</button>
+                    </div>
+                </form>
             </div>
         </div>
+
+        <!-- Edit Modal -->
+        <div class="modal" :class="{ 'modal-open': showEditModal }" style="background-color: rgba(0,0,0,0.5)">
+            <div class="modal-box max-w-xl rounded-[2rem] p-8 border border-white/10 shadow-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold">Edit Author</h3>
+                    <button @click="showEditModal = false" class="btn btn-sm btn-circle btn-ghost">✕</button>
+                </div>
+                <form :action="'{{ url('authors') }}/' + editData.id" method="POST" class="space-y-4">
+                    @csrf
+                    @method('PATCH')
+                    <div class="form-control">
+                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Author Name</span></label>
+                        <input type="text" name="name" x-model="editData.name" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl" required>
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Biography</span></label>
+                        <textarea name="bio" x-model="editData.bio" class="textarea textarea-bordered focus:textarea-primary bg-base-200 border-base-300 rounded-xl h-32"></textarea>
+                    </div>
+                    <div class="modal-action mt-8">
+                        <button type="button" @click="showEditModal = false" class="btn btn-ghost rounded-xl">Cancel</button>
+                        <button type="submit" class="btn btn-warning rounded-xl px-8 text-warning-content">Update Author</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.confirm-delete')) {
+                    const button = e.target.closest('.confirm-delete');
+                    const form = button.closest('form');
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "All books by this author will remain, but the author profile will be removed!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ff5861',
+                        cancelButtonColor: '#355872',
+                        confirmButtonText: 'Yes, delete author!',
+                        customClass: {
+                            popup: 'rounded-2xl border-none shadow-2xl',
+                            confirmButton: 'rounded-xl',
+                            cancelButton: 'rounded-xl'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                }
+            });
+        </script>
+
     </div>
 </x-app-layout>

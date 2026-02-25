@@ -11,10 +11,24 @@ class BookController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $books = Book::with('authors')->paginate(10);
-        return view('books.index', compact('books'));
+        $search = $request->input('search');
+
+        $query = Book::with('authors');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('authors', function($aq) use ($search) {
+                      $aq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $books = $query->get();
+
+        return view('books.index', compact('books', 'search'));
     }
 
     /**
@@ -22,8 +36,7 @@ class BookController extends Controller
      */
     public function create()
     {
-        $authors = Author::all();
-        return view('books.create', compact('authors'));
+        return redirect()->route('books.index');
     }
 
     /**
@@ -34,29 +47,33 @@ class BookController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'isbn' => 'required|string|unique:books',
             'total_quantity' => 'required|integer|min:1',
             'publisher' => 'nullable|string|max:255',
             'published_year' => 'nullable|integer|min:1900|max:' . date('Y'),
             'authors' => 'nullable|array',
             'authors.*' => 'exists:authors,id',
+            'cover_image' => 'nullable|string',
         ]);
 
         $book = Book::create([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
-            'isbn' => $validated['isbn'],
             'total_quantity' => $validated['total_quantity'],
             'available_quantity' => $validated['total_quantity'],
             'publisher' => $validated['publisher'] ?? null,
             'published_year' => $validated['published_year'] ?? null,
+            'cover_image' => $validated['cover_image'] ?? null,
         ]);
 
         if (!empty($validated['authors'])) {
             $book->authors()->attach($validated['authors']);
         }
 
-        return redirect()->route('books.show', $book)->with('success', 'Book created successfully.');
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Book created successfully.']);
+        }
+
+        return redirect()->route('books.index')->with('success', 'Book created successfully.');
     }
 
     /**
@@ -73,8 +90,7 @@ class BookController extends Controller
      */
     public function edit(Book $book)
     {
-        $authors = Author::all();
-        return view('books.edit', compact('book', 'authors'));
+        return redirect()->route('books.index');
     }
 
     /**
@@ -85,28 +101,32 @@ class BookController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'isbn' => 'required|string|unique:books,isbn,' . $book->id,
             'total_quantity' => 'required|integer|min:1',
             'publisher' => 'nullable|string|max:255',
             'published_year' => 'nullable|integer|min:1900|max:' . date('Y'),
             'authors' => 'nullable|array',
             'authors.*' => 'exists:authors,id',
+            'cover_image' => 'nullable|string',
         ]);
 
         $book->update([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
-            'isbn' => $validated['isbn'],
             'total_quantity' => $validated['total_quantity'],
             'publisher' => $validated['publisher'] ?? null,
             'published_year' => $validated['published_year'] ?? null,
+            'cover_image' => $validated['cover_image'] ?? null,
         ]);
 
         if (isset($validated['authors'])) {
             $book->authors()->sync($validated['authors']);
         }
 
-        return redirect()->route('books.show', $book)->with('success', 'Book updated successfully.');
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Book updated successfully.']);
+        }
+
+        return redirect()->route('books.index')->with('success', 'Book updated successfully.');
     }
 
     /**
@@ -115,6 +135,10 @@ class BookController extends Controller
     public function destroy(Book $book)
     {
         $book->delete();
+        if (request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Book deleted successfully.']);
+        }
+
         return redirect()->route('books.index')->with('success', 'Book deleted successfully.');
     }
 }

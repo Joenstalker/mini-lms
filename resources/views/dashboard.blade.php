@@ -1,17 +1,15 @@
 <x-app-layout>
     <div class="space-y-12 py-6">
         <!-- Header -->
-        <header class="relative overflow-hidden rounded-[2.5rem] bg-neutral text-neutral-content p-12 md:p-16 shadow-2xl">
-            <div class="absolute inset-0 bg-gradient-to-tr from-primary/30 to-secondary/30"></div>
-            <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+        <header class="relative overflow-hidden rounded-[2.5rem] bg-slate-900 text-white p-12 md:p-16 shadow-xl border border-white/5">
             <div class="relative z-10 space-y-4">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-bold uppercase tracking-widest">
-                    System Dashboard
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white/60 text-[10px] font-bold uppercase tracking-widest">
+                    Library Management System
                 </div>
                 <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                    Welcome back, <span class="gradient-text">{{ Auth::user()->name }}</span>
+                    Welcome back, <span class="text-primary-content bg-primary px-3 py-1 rounded-2xl">{{ Auth::user()->name }}</span>
                 </h1>
-                <p class="text-lg opacity-60 max-w-2xl">Your library is currently healthy. Here's what's happening today in your ecosystem.</p>
+                <p class="text-lg opacity-60 max-w-2xl font-medium">Your library is currently healthy. Here's what's happening today.</p>
             </div>
         </header>
 
@@ -67,17 +65,17 @@
                 @endphp
 
                 @if($overdueTransactions->count() > 0)
-                <div class="glass-card overflow-hidden border-error/20 bg-error/5">
-                    <div class="p-6 flex justify-between items-center border-b border-error/10 bg-error/10">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-error rounded-xl flex items-center justify-center text-error-content shadow-lg shadow-error/20">
+                <div class="bg-base-100 rounded-[2rem] overflow-hidden border border-error/20 shadow-sm">
+                    <div class="p-8 flex justify-between items-center bg-error/5 border-b border-error/10">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-error rounded-2xl flex items-center justify-center text-error-content shadow-sm">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                             </div>
-                            <h3 class="text-xl font-extrabold text-error">Overdue Alerts</h3>
+                            <h3 class="text-xl font-bold text-error tracking-tight">Overdue Alerts</h3>
                         </div>
-                        <a href="{{ route('borrow-transactions.overdue') }}" class="btn btn-error btn-sm btn-outline font-bold">Process Returns</a>
+                        <a href="{{ route('borrow-transactions.overdue') }}" class="btn btn-error btn-sm rounded-xl font-bold">Process Returns</a>
                     </div>
-                    <div class="p-6 space-y-4">
+                    <div class="p-8 space-y-4">
                         @foreach($overdueTransactions as $ot)
                         <div class="flex items-center justify-between p-4 bg-base-100 rounded-2xl border border-error/10 shadow-sm hover:shadow-md transition-shadow">
                             <div class="flex items-center gap-4">
@@ -151,8 +149,11 @@
                                             @endif
                                         </td>
                                         <td class="text-right">
-                                            <a href="{{ route('borrow-transactions.show', $transaction) }}" class="btn btn-ghost btn-circle btn-sm">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                            <a href="{{ route('borrow-transactions.show', $transaction) }}" class="btn btn-sm btn-ghost hover:bg-primary/20 hover:text-primary transition-all duration-300 rounded-lg group" title="View Details">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                </svg>
                                             </a>
                                         </td>
                                     </tr>

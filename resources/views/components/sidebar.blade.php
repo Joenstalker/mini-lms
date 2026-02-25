@@ -33,26 +33,31 @@
     ];
 @endphp
 
-<div class="flex flex-col h-full bg-base-200 w-80">
+<div class="flex flex-col h-full bg-base-200 w-full overflow-hidden">
     <!-- Brand -->
-    <div class="p-6">
-        <a href="{{ route('home') }}" class="flex items-center gap-3 no-underline group">
-            <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-content shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
+    <div class="transition-all duration-300" :class="sidebarCollapsed ? 'p-2 py-4' : 'p-6'">
+        <a href="{{ route('home') }}" class="flex items-center gap-3 no-underline group justify-center lg:justify-start">
+            <div class="w-10 h-10 bg-primary rounded-xl flex-shrink-0 flex items-center justify-center text-primary-content group-hover:bg-primary/90 transition-all duration-300"
+                 :class="sidebarCollapsed ? 'w-10 h-10 rounded-xl' : 'w-10 h-10 rounded-xl'">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>
                 </svg>
             </div>
-            <div class="flex flex-col">
-                <span class="text-xl font-bold tracking-tight gradient-text">Mini-LMS</span>
-                <span class="text-[10px] uppercase tracking-widest opacity-50 font-bold">Administrator</span>
+            <div class="flex flex-col transition-all duration-300 overflow-hidden" x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+                <span class="text-xl font-bold tracking-tight text-primary truncate">Mini-LMS</span>
+                <span class="text-[10px] uppercase tracking-widest opacity-50 font-bold truncate">Administrator</span>
             </div>
         </a>
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-grow px-4 pb-4 overflow-y-auto custom-scrollbar">
+    <nav class="flex-grow pb-4 overflow-x-hidden custom-scrollbar transition-all duration-300"
+         :class="sidebarCollapsed ? 'overflow-y-hidden px-2' : 'overflow-y-auto px-4'">
         <ul class="menu menu-md p-0 gap-1">
-            <li class="menu-title px-4 py-3 opacity-50 uppercase text-[10px] tracking-widest font-bold">Main Menu</li>
+            <li class="menu-title px-4 py-3 opacity-50 uppercase text-[10px] tracking-widest font-bold text-center lg:text-left">
+                <span x-show="!sidebarCollapsed" x-transition>Main Menu</span>
+                <span x-show="sidebarCollapsed" class="block lg:hidden">Main Menu</span>
+            </li>
             @foreach($navItems as $item)
                 @php
                     $isActive = request()->routeIs($item['route'] . '*') || (isset($item['pattern']) && request()->is($item['pattern']));
@@ -60,77 +65,97 @@
                 <li>
                     <a href="{{ route($item['route']) }}" 
                        @class([
-                           'flex items-center gap-4 py-3 rounded-xl transition-all duration-300 group',
+                           'flex items-center py-3 rounded-xl transition-all duration-300 group',
                            'bg-primary text-primary-content shadow-lg shadow-primary/20' => $isActive,
                            'hover:bg-primary/10 hover:text-primary' => !$isActive
-                       ])>
+                       ])
+                       :class="sidebarCollapsed ? 'px-0 justify-center gap-0' : 'px-4 justify-start gap-4'">
                         <div @class([
-                            'transition-transform duration-300 group-hover:scale-110',
+                            'transition-transform duration-300 group-hover:scale-110 flex-shrink-0 flex items-center justify-center',
                             'text-primary-content' => $isActive,
                             'text-primary group-hover:text-primary' => !$isActive
-                        ])>
+                        ])
+                        :class="sidebarCollapsed ? 'w-12 h-12' : ''">
                             {!! $item['icon'] !!}
                         </div>
-                        <div class="flex flex-col">
-                            <span class="font-bold">{{ $item['name'] }}</span>
+                        <div class="flex flex-col overflow-hidden transition-all duration-300" x-show="!sidebarCollapsed" x-transition>
+                            <span class="font-bold truncate">{{ $item['name'] }}</span>
                             @if(!$isActive)
-                                <span class="text-[10px] opacity-50 group-hover:opacity-70 transition-opacity">{{ $item['purpose'] }}</span>
+                                <span class="text-[10px] opacity-50 group-hover:opacity-70 transition-opacity truncate">{{ $item['purpose'] }}</span>
                             @endif
                         </div>
+                        @if(!$isActive)
+                             <div x-show="sidebarCollapsed" class="absolute left-full ml-4 px-3 py-2 bg-neutral text-neutral-content text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100] whitespace-nowrap shadow-xl">
+                                {{ $item['name'] }}
+                             </div>
+                        @endif
                         @if(isset($item['badge']) && $item['badge'] > 0)
-                            <div class="ml-auto badge badge-warning badge-sm font-bold shadow-sm">{{ $item['badge'] }}</div>
+                            <div x-show="!sidebarCollapsed" class="ml-auto badge badge-warning badge-sm font-bold shadow-sm">{{ $item['badge'] }}</div>
                         @elseif($isActive)
-                            <div class="ml-auto w-1.5 h-1.5 rounded-full bg-primary-content animate-pulse"></div>
+                            <div x-show="!sidebarCollapsed" class="ml-auto w-1.5 h-1.5 rounded-full bg-primary-content animate-pulse"></div>
                         @endif
                     </a>
                 </li>
-            @endforeach
+@endforeach
         </ul>
 
-        <!-- Bottom section / help -->
-        <div class="mt-8 px-2">
-            <div class="bg-base-300/50 rounded-2xl p-4 border border-base-300">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-8 h-8 rounded-lg bg-success/20 text-success flex items-center justify-center text-lg">💡</div>
-                    <span class="text-xs font-bold uppercase tracking-wider">Quick Hint</span>
-                </div>
-                <p class="text-[11px] opacity-60 leading-relaxed mb-3">Check the transactions module for overdue books and fines.</p>
-                <a href="{{ route('borrow-transactions.overdue') }}" class="btn btn-xs btn-primary btn-block rounded-lg">View Overdue</a>
-            </div>
-        </div>
     </nav>
 
     <!-- User Section -->
-    <div class="p-4 mt-auto">
-        <div class="bg-base-300/30 rounded-2xl p-2 border border-base-300/50">
-            <div class="flex items-center gap-3 p-2">
-                <div class="avatar placeholder">
-                    <div class="bg-primary text-primary-content rounded-xl w-10 h-10 font-bold">
+    <div @class([
+        'p-4 mt-auto transition-all duration-300',
+        'px-2' => true {{-- default --}}
+    ])
+    :class="sidebarCollapsed ? 'px-2' : 'p-4'">
+        <div @class([
+            'bg-base-300/30 rounded-2xl border transition-all duration-300 overflow-hidden',
+            'border-base-300/50' => true
+        ])
+        :class="sidebarCollapsed ? 'p-0 border-transparent bg-transparent' : 'p-2 border-base-300/50'">
+            <div class="flex items-center gap-3 p-2 justify-center lg:justify-start">
+                <div class="avatar placeholder flex-shrink-0">
+                    <div class="bg-primary text-primary-content font-bold transition-all duration-300 rounded-full"
+                         :class="sidebarCollapsed ? 'w-12 h-12 animate-in zoom-in-50' : 'w-10 h-10'">
                         {{ substr(Auth::user()->name, 0, 1) }}
                     </div>
                 </div>
-                <div class="flex flex-col min-w-0">
+                <div class="flex flex-col min-w-0 transition-all duration-300" x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
                     <span class="text-sm font-bold truncate">{{ Auth::user()->name }}</span>
                     <span class="text-[10px] opacity-50 truncate">{{ Auth::user()->email }}</span>
                 </div>
-                <div class="dropdown dropdown-top dropdown-end ml-auto">
-                    <div tabindex="0" role="button" class="btn btn-ghost btn-xs btn-circle opacity-50 hover:opacity-100">
+                <div class="dropdown dropdown-top dropdown-end ml-auto" x-show="!sidebarCollapsed" x-transition>
+                    <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-xs opacity-50 hover:opacity-100">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                     </div>
                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-2xl bg-base-100 rounded-2xl w-52 mb-2 border border-base-200">
-                        <li><a href="{{ route('profile.edit') }}" class="py-2 rounded-xl group hover:bg-primary/10"><svg class="w-4 h-4 opacity-70 group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> My Profile</a></li>
-                        <div class="divider my-1"></div>
-                        <li>
-                            <form method="POST" action="{{ route('logout') }}" class="w-full">
-                                @csrf
-                                <button type="submit" class="w-full text-left py-2 rounded-xl text-error hover:bg-error/10 flex items-center gap-2 group">
-                                    <svg class="w-4 h-4 opacity-70 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                                    Sign Out
-                                </button>
-                            </form>
-                        </li>
+                        <li><button @click="showProfileModal = true" class="py-2 px-4 rounded-xl group hover:bg-primary/10 w-full text-left flex items-center gap-2"><svg class="w-4 h-4 opacity-70 group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> My Profile</button></li>
                     </ul>
                 </div>
+            </div>
+
+            <!-- Visible Logout Button -->
+            <div class="px-2 pb-2 mt-1" x-show="!sidebarCollapsed" x-transition>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-error btn-ghost w-full justify-start gap-2 rounded-xl normal-case font-medium hover:bg-error/10">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Sign Out
+                    </button>
+                </form>
+            </div>
+
+            <!-- Collapsed Logout Button -->
+            <div class="flex justify-center pb-2 mt-2" x-show="sidebarCollapsed" x-transition>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-ghost btn-circle btn-sm text-error hover:bg-error/10" title="Sign Out">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                    </button>
+                </form>
             </div>
         </div>
     </div>

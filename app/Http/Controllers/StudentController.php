@@ -11,10 +11,33 @@ class StudentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $students = Student::with('borrowTransactions')->paginate(10);
-        return view('students.index', compact('students'));
+        $search = $request->input('search');
+        $filter = $request->input('filter');
+        $query = Student::with('borrowTransactions');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($filter === 'active') {
+            $query->whereHas('borrowTransactions', function($q) {
+                $q->whereIn('status', ['borrowed', 'partially_returned']);
+            });
+        }
+
+        $students = $query->paginate(15)->withQueryString();
+
+        if ($request->ajax()) {
+            return view('students.partials.table', compact('students'))->render();
+        }
+
+        return view('students.index', compact('students', 'search'));
     }
 
     /**
@@ -35,6 +58,7 @@ class StudentController extends Controller
             'email' => 'required|email|unique:students',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'pin' => 'required|string|min:4|max:6|unique:students,pin',
         ]);
 
         $student = Student::create($validated);
@@ -71,6 +95,7 @@ class StudentController extends Controller
             'email' => 'required|email|unique:students,email,' . $student->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'pin' => 'required|string|min:4|max:6|unique:students,pin,' . $student->id,
         ]);
 
         $student->update($validated);

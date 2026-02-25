@@ -11,11 +11,11 @@ class Book extends Model
     protected $fillable = [
         'title',
         'description',
-        'isbn',
         'total_quantity',
         'available_quantity',
         'publisher',
         'published_year',
+        'cover_image',
     ];
 
     public function authors(): BelongsToMany

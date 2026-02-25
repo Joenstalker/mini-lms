@@ -57,7 +57,7 @@
         </div>
 
         <div class="pt-4">
-            <button type="submit" class="btn btn-primary btn-block shadow-lg shadow-primary/20">
+            <button type="submit" class="btn btn-primary btn-block">
                 {{ __('Reset Password') }}
             </button>
         </div>

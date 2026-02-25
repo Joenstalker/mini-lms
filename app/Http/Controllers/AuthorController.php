@@ -10,10 +10,25 @@ class AuthorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $authors = Author::with('books')->paginate(10);
-        return view('authors.index', compact('authors'));
+        $search = $request->input('search');
+        $query = Author::with('books');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('bio', 'like', "%{$search}%");
+            });
+        }
+
+        $authors = $query->paginate(15)->withQueryString();
+
+        if ($request->ajax()) {
+            return view('authors.partials.table', compact('authors'))->render();
+        }
+
+        return view('authors.index', compact('authors', 'search'));
     }
 
     /**

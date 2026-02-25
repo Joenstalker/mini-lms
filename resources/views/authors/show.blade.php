@@ -44,8 +44,7 @@
                     <a href="{{ route('books.show', $book) }}" class="card bg-base-300 shadow-md hover:shadow-lg transition">
                         <div class="card-body">
                             <h3 class="card-title text-base">{{ $book->title }}</h3>
-                            <p class="text-sm opacity-50">ISBN: {{ $book->isbn }}</p>
-                            <div class="badge badge-ghost">{{ $book->available_quantity }}/{{ $book->total_quantity }} available</div>
+                            <div class="badge badge-ghost mt-2">{{ $book->available_quantity }}/{{ $book->total_quantity }} available</div>
                         </div>
                     </a>
                 @empty

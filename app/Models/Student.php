@@ -12,6 +12,7 @@ class Student extends Model
         'email',
         'phone',
         'address',
+        'pin',
     ];
 
     public function borrowTransactions(): HasMany

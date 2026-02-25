@@ -30,7 +30,7 @@
         </div>
 
         <div class="pt-2 flex flex-col gap-3">
-            <button type="submit" class="btn btn-primary btn-block shadow-lg shadow-primary/20">
+            <button type="submit" class="btn btn-primary btn-block">
                 {{ __('Email Reset Link') }}
             </button>
             <a href="{{ route('login') }}" class="btn btn-ghost btn-block btn-sm opacity-60">Back to Login</a>

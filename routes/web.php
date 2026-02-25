@@ -14,6 +14,12 @@ Route::get('books/{book}', [BookController::class, 'show'])->name('books.show');
 Route::get('authors', [AuthorController::class, 'index'])->name('authors.index');
 Route::get('authors/{author}', [AuthorController::class, 'show'])->name('authors.show');
 
+// Public Borrowing for Students
+Route::get('borrow-transactions/create', [BorrowTransactionController::class, 'create'])->name('borrow-transactions.create');
+Route::post('borrow-transactions', [BorrowTransactionController::class, 'store'])->name('borrow-transactions.store');
+Route::get('students/{student}/borrow-history', [BorrowTransactionController::class, 'studentHistory'])->name('borrow-transactions.student-history');
+Route::get('borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'show'])->name('borrow-transactions.show');
+
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     // Dashboard
@@ -35,10 +41,12 @@ Route::middleware('auth')->group(function () {
     // Book Management
     Route::resource('books', BookController::class)->except(['index', 'show']);
 
-    // Borrow Transaction Management
-    Route::resource('borrow-transactions', BorrowTransactionController::class);
+    // Admin Borrow Management
+    Route::get('borrow-transactions', [BorrowTransactionController::class, 'index'])->name('borrow-transactions.index');
     Route::get('borrow-transactions/overdue', [BorrowTransactionController::class, 'overdue'])->name('borrow-transactions.overdue');
-    Route::get('students/{student}/borrow-history', [BorrowTransactionController::class, 'studentHistory'])->name('borrow-transactions.student-history');
+    Route::delete('borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'destroy'])->name('borrow-transactions.destroy');
+    Route::get('borrow-transactions/{borrow_transaction}/edit', [BorrowTransactionController::class, 'edit'])->name('borrow-transactions.edit');
+    Route::patch('borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'update'])->name('borrow-transactions.update');
 });
 
 require __DIR__.'/auth.php';
