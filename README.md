@@ -39,7 +39,7 @@ Ensure you have the following installed:
    cp .env.example .env
    php artisan key:generate
    ```
-   *Note: By default, the project is configured to use SQLite. Ensure your `.env` has `DB_CONNECTION=sqlite`.*
+   *Note: By default, the project is configured to use SQLite. Ensure your `.env` has `DB_CONNECTION=mysql`.*
 
 5. **Run Migrations & Seeders**
    This will set up the database schema and populate it with sample books, authors, and students.
