@@ -1,6 +1,6 @@
 <div class="overflow-x-auto">
-    <table class="table table-zebra w-full">
-        <thead class="bg-base-200 text-base-content border-b border-base-300">
+    <table class="table w-full text-white border-separate border-spacing-y-2">
+        <thead class="bg-white/5 text-white border-b border-white/10">
             <tr>
                 <th class="font-bold rounded-tl-lg">Name</th>
                 <th class="font-bold">Email Address</th>
@@ -21,7 +21,7 @@
         </thead>
         <tbody>
             @forelse ($students as $student)
-                <tr class="hover:bg-primary/10 transition-colors">
+                <tr class="hover:bg-white/10 transition-colors glass-card">
                     <td>
                         <div class="flex items-center gap-4">
                             <div class="avatar placeholder">
@@ -30,33 +30,33 @@
                                 </div>
                             </div>
                             <div>
-                                <div class="font-bold text-base">{{ $student->name }}</div>
-                                <div class="text-sm opacity-70">Member since {{ $student->created_at->format('M Y') }}</div>
+                                <div class="font-bold text-base text-white">{{ $student->name }}</div>
+                                <div class="text-sm text-white/60">Member since {{ $student->created_at->format('M Y') }}</div>
                             </div>
                         </div>
                     </td>
                     <td>
-                        <div class="font-semibold text-base-content">{{ $student->email }}</div>
+                        <div class="font-semibold text-white/80 lowercase italic">{{ $student->email }}</div>
                     </td>
                     <td>
-                        <span class="opacity-80">{{ $student->phone ?? '—' }}</span>
+                        <span class="text-white/70">{{ $student->phone ?? '—' }}</span>
                     </td>
                     <td class="text-center">
                         @php $activeCount = $student->borrowTransactions->whereIn('status', ['borrowed', 'partially_returned'])->count(); @endphp
                         @if ($activeCount > 0)
                             <span class="badge badge-warning badge-lg font-bold">{{ $activeCount }}</span>
                         @else
-                            <span class="badge badge-outline">0</span>
+                            <span class="badge badge-outline text-white/50">0</span>
                         @endif
                     </td>
                     <td>
                         <div class="flex gap-1 shrink-0">
-                            <a href="{{ route('students.show', $student) }}" class="btn btn-sm btn-ghost hover:bg-info/20 hover:text-info transition-all duration-300 rounded-lg group" title="View Profile">
+                            <button @click="openDetailsModal('{{ $student->id }}')" class="btn btn-sm btn-ghost hover:bg-info/20 text-white/70 hover:text-info transition-all duration-300 rounded-lg group" title="View Profile">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                 </svg>
-                            </a>
+                            </button>
                             <button @click="openEditModal({
                                 id: '{{ $student->id }}',
                                 name: '{{ addslashes($student->name) }}',
@@ -64,7 +64,7 @@
                                 phone: '{{ addslashes($student->phone) }}',
                                 address: '{{ addslashes($student->address) }}',
                                 pin: '{{ $student->pin }}'
-                            })" class="btn btn-sm btn-ghost hover:bg-warning/20 hover:text-warning transition-all duration-300 rounded-lg group" title="Edit Student">
+                            })" class="btn btn-sm btn-ghost hover:bg-warning/20 text-white/70 hover:text-warning transition-all duration-300 rounded-lg group" title="Edit Student">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
@@ -72,7 +72,7 @@
                             <form method="POST" action="{{ route('students.destroy', $student) }}" class="inline delete-form">
                                 @csrf
                                 @method('DELETE')
-                                <button type="button" class="btn btn-sm btn-ghost hover:bg-error/20 hover:text-error transition-all duration-300 rounded-lg group confirm-delete" title="Delete Student">
+                                <button type="button" class="btn btn-sm btn-ghost hover:bg-error/20 text-white/70 hover:text-error transition-all duration-300 rounded-lg group confirm-delete" title="Delete Student">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                     </svg>

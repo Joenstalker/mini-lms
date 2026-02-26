@@ -14,14 +14,15 @@
 
 @layer components {
     .glass {
-        background-color: var(--fallback-b1, oklch(var(--b1) / 0.8));
-        @apply backdrop-blur-md border;
-        border-color: var(--fallback-bc, oklch(var(--bc) / 0.1));
+        background-color: var(--fallback-b1, oklch(var(--b1) / 0.4));
+        @apply backdrop-blur-[20px] border shadow-2xl;
+        border-color: var(--fallback-bc, oklch(var(--bc) / 0.15));
     }
 
     .glass-card {
-        @apply bg-base-100 border shadow-sm rounded-2xl;
-        border-color: var(--fallback-bc, oklch(var(--bc) / 0.05));
+        background-color: var(--fallback-b1, oklch(var(--b1) / 0.6));
+        @apply backdrop-blur-[12px] border shadow-xl rounded-[2rem];
+        border-color: var(--fallback-bc, oklch(var(--bc) / 0.1));
     }
 
     .text-premium {

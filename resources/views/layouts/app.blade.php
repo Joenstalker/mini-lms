@@ -1,8 +1,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" 
-      x-data="{ 
+          x-data="{ 
           darkMode: localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches), 
-          showProfileModal: false,
-          sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true'
+          showProfileModal: false
       }" 
       :data-theme="darkMode ? 'dark' : 'light'" 
       :class="{ 'dark': darkMode }"
@@ -91,7 +90,7 @@
           style="background-image: url('{{ asset('images/library-background.png') }}'); background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat;">
 
         {{-- Overlay to keep content readable --}}
-        <div class="fixed inset-0 bg-base-100/80 backdrop-blur-[2px] -z-10 pointer-events-none"></div>
+        <div class="fixed inset-0 bg-base-100/40 backdrop-blur-[2px] -z-10 pointer-events-none"></div>
 
         @auth
         <div class="drawer lg:drawer-open">
@@ -102,12 +101,6 @@
                 <nav class="sticky top-0 z-40 h-16 w-full bg-base-100/80 backdrop-blur-md border-b border-base-200 transition-all duration-300">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
                         <div class="flex items-center gap-4">
-                            <!-- Sidebar Toggle (Desktop) -->
-                            <button @click="sidebarCollapsed = !sidebarCollapsed; localStorage.setItem('sidebarCollapsed', sidebarCollapsed)" class="hidden lg:flex btn btn-ghost btn-circle btn-sm opacity-50 hover:opacity-100">
-                                <svg x-show="!sidebarCollapsed" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                                <svg x-show="sidebarCollapsed" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path></svg>
-                            </button>
-
                             <!-- Mobile Hamburguer -->
                             <div class="flex lg:hidden">
                                 <label for="main-drawer" class="btn btn-ghost btn-circle">
@@ -268,8 +261,7 @@
                 </div>
 
             <!-- Sidebar -->
-            <div id="spa-sidebar" data-turbo-permanent class="drawer-side z-50 transition-all duration-300 overflow-hidden" 
-                 :style="sidebarCollapsed ? 'width: var(--side-nav-collapsed)' : 'width: var(--side-nav-width)'">
+            <div id="spa-sidebar" data-turbo-permanent class="drawer-side z-50 transition-all duration-300 overflow-hidden w-[var(--side-nav-width)]">
                 <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
                 <x-sidebar />
             </div>

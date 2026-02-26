@@ -1,37 +1,37 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @forelse ($authors as $author)
-        <div class="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary/30">
+        <div class="card glass-card hover:shadow-2xl transition-all duration-500 hover:border-primary/40 group/card">
             <div class="card-body space-y-4">
                 <div class="flex items-start gap-3">
                     <div class="avatar placeholder">
-                        <div class="bg-primary text-primary-content rounded-full w-12 font-bold">
+                        <div class="bg-primary/20 text-white rounded-xl w-14 h-14 font-extrabold text-xl shadow-inner border border-white/10">
                             <span>{{ substr($author->name, 0, 1) }}</span>
                         </div>
                     </div>
-                    <div class="flex-1">
-                        <h2 class="card-title text-xl text-base-content">{{ $author->name }}</h2>
-                        <p class="text-xs opacity-50 uppercase tracking-widest font-bold">Author Profile</p>
+                    <div>
+                        <h3 class="font-bold text-xl text-white group-hover/card:text-primary transition-colors leading-tight">{{ $author->name }}</h3>
+                        <p class="text-xs text-white/50 font-medium tracking-wide">Professional Author</p>
                     </div>
                 </div>
                 
-                @if ($author->bio)
-                    <p class="text-sm text-base-content/70 line-clamp-3 italic leading-relaxed">{{ $author->bio }}</p>
-                @else
-                    <p class="text-sm opacity-50 italic">No bio provided</p>
-                @endif
+                <div class="bg-base-100/10 p-3 rounded-xl border border-white/5">
+                    <p class="text-xs text-white/70 line-clamp-2 leading-relaxed">
+                        {{ $author->bio ?: 'No biography available for this author yet.' }}
+                    </p>
+                </div>
                 
                 <div class="divider my-2"></div>
                 
-                <div class="flex items-center justify-between bg-base-200/50 p-3 rounded-xl border border-base-300/50">
+                <div class="flex items-center justify-between bg-base-100/30 p-3 rounded-xl border border-white/5">
                     <div class="flex items-center gap-2">
-                        <div class="bg-primary/10 p-2 rounded-lg">
+                        <div class="bg-primary/20 p-2 rounded-lg">
                             <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                             </svg>
                         </div>
                         <div>
-                            <span class="text-sm font-bold text-base-content">{{ $author->books->count() }}</span>
-                            <span class="text-[10px] uppercase tracking-wider opacity-50 block font-bold leading-tight">Published</span>
+                            <span class="text-sm font-bold text-white">{{ $author->books->count() }}</span>
+                            <span class="text-[10px] uppercase tracking-wider text-white/70 block font-bold leading-tight">Published Books</span>
                         </div>
                     </div>
                 </div>

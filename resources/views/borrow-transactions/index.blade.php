@@ -73,10 +73,10 @@
             }
         }
     }">
-        <div class="bg-base-200 text-base-content rounded-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-base-300">
+        <div class="glass text-white rounded-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-white/10">
             <div>
                 <h1 class="text-4xl font-bold">Borrowing Transactions</h1>
-                <p class="text-lg opacity-60 mt-2 font-medium">Manage all library borrowing records</p>
+                <p class="text-lg text-white/60 mt-2 font-medium">Manage all library borrowing records</p>
             </div>
 
             <div class="flex-grow max-w-md w-full mx-0 md:mx-4">
@@ -119,58 +119,73 @@
             </button>
         </div>
 
-        <!-- Create Modal -->
-        <div class="modal" :class="{ 'modal-open': showCreateModal }" style="background-color: rgba(0,0,0,0.5)">
-            <div class="modal-box max-w-xl rounded-[2rem] p-8 border border-white/10 shadow-2xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold">New Transaction</h3>
-                    <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost">✕</button>
+        <div class="modal backdrop-blur-md" :class="{ 'modal-open': showCreateModal }" style="background-color: rgba(0,0,0,0.4)">
+            <div class="modal-box max-w-xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
+                {{-- Decorative background glow --}}
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 blur-[100px] rounded-full"></div>
+                
+                {{-- Fixed Header --}}
+                <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
+                    <div>
+                        <h3 class="text-2xl font-black tracking-tight">New Transaction</h3>
+                        <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Process Book Loan</p>
+                    </div>
+                    <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                 </div>
-                <form action="{{ route('borrow-transactions.store') }}" method="POST" class="space-y-4">
+
+                <form action="{{ route('borrow-transactions.store') }}" method="POST" class="flex flex-col flex-grow overflow-hidden">
                     @csrf
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Select Student</span></label>
-                        <select name="student_id" class="select select-bordered focus:select-primary bg-base-200 border-base-300 rounded-xl" required>
-                            <option value="" disabled selected>Choose a student</option>
-                            @foreach (\App\Models\Student::all() as $student)
-                                <option value="{{ $student->id }}">{{ $student->name }} ({{ $student->email }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Select Book</span></label>
-                        <select name="book_id" class="select select-bordered focus:select-primary bg-base-200 border-base-300 rounded-xl" required>
-                            <option value="" disabled selected>Choose a book</option>
-                            @foreach (\App\Models\Book::where('available_quantity', '>', 0)->get() as $book)
-                                <option value="{{ $book->id }}">{{ $book->title }} ({{ $book->available_quantity }} available)</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    
+                    {{-- Scrollable Content Body --}}
+                    <div class="flex-grow overflow-y-auto p-8 pt-6 space-y-4 scrollbar-thin relative z-10">
                         <div class="form-control">
-                            <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Borrow Date</span></label>
-                            <input type="date" name="borrow_date" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl" value="{{ date('Y-m-d') }}" required>
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Select Student</span></label>
+                            <select name="student_id" class="select w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white transition-all font-bold" required>
+                                <option value="" disabled selected class="bg-slate-900">Choose a student</option>
+                                @foreach (\App\Models\Student::all() as $student)
+                                    <option value="{{ $student->id }}" class="bg-slate-900 text-white">{{ $student->name }} ({{ $student->email }})</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="form-control">
-                            <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Due Date</span></label>
-                            <input type="date" name="due_date" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required>
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Select Book</span></label>
+                            <select name="book_id" class="select w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white transition-all font-bold" required>
+                                <option value="" disabled selected class="bg-slate-900">Choose a book</option>
+                                @foreach (\App\Models\Book::where('available_quantity', '>', 0)->get() as $book)
+                                    <option value="{{ $book->id }}" class="bg-slate-900 text-white">{{ $book->title }} ({{ $book->available_quantity }} available)</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Borrow Date</span></label>
+                                <input type="date" name="borrow_date" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white transition-all font-bold" value="{{ date('Y-m-d') }}" required>
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Due Date</span></label>
+                                <input type="date" name="due_date" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white transition-all font-bold" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Quantity</span></label>
+                            <input type="number" name="quantity_borrowed" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white transition-all font-bold" value="1" min="1" required>
                         </div>
                     </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Quantity</span></label>
-                        <input type="number" name="quantity_borrowed" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl" value="1" min="1" required>
-                    </div>
-                    <div class="modal-action mt-8">
-                        <button type="button" @click="showCreateModal = false" class="btn btn-ghost rounded-xl">Cancel</button>
-                        <button type="submit" class="btn btn-primary rounded-xl px-8">Process Loan</button>
+
+                    {{-- Fixed Action Footer --}}
+                    <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
+                        <button type="button" @click="showCreateModal = false" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all">Cancel</button>
+                        <button type="submit" class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:scale-105 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-primary/20 transition-all duration-300">
+                            Process Loan
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- Details Modal -->
-        <div class="modal" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.5)">
-            <div class="modal-box max-w-5xl max-h-[90vh] rounded-[2.5rem] p-0 border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+        <div class="modal backdrop-blur-md" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.4)">
+            <div class="modal-box max-w-5xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl overflow-hidden flex flex-col">
                 <div class="p-6 md:p-10 overflow-y-auto flex-grow custom-scrollbar">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center gap-4">
@@ -268,7 +283,7 @@
             </div>
         </div>
 
-        <div class="bg-base-100 rounded-2xl shadow-sm border border-base-200 overflow-hidden">
+        <div class="glass-card rounded-2xl shadow-xl border border-white/10 overflow-hidden">
             <div id="transactions-table-content">
                 @include('borrow-transactions.partials.table', ['transactions' => $transactions])
             </div>

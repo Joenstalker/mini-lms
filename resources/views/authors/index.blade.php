@@ -27,10 +27,10 @@
         }
     }">
         <!-- Header -->
-        <div class="bg-base-200 text-base-content rounded-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-base-300">
+        <div class="glass text-white rounded-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-white/10">
             <div>
                 <h1 class="text-4xl font-bold">✍️ Authors Collection</h1>
-                <p class="text-lg opacity-60 mt-2 font-medium">Browse and manage all book authors</p>
+                <p class="text-lg text-white/60 mt-2 font-medium">Browse and manage all book authors</p>
             </div>
 
             <div class="flex-grow max-w-md w-full mx-0 md:mx-4">
@@ -78,52 +78,83 @@
             @include('authors.partials.table')
         </div>
 
-        <!-- Create Modal -->
-        <div class="modal" :class="{ 'modal-open': showCreateModal }" style="background-color: rgba(0,0,0,0.5)">
-            <div class="modal-box max-w-xl rounded-[2rem] p-8 border border-white/10 shadow-2xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold">New Author</h3>
-                    <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost">✕</button>
+        <div class="modal backdrop-blur-md" :class="{ 'modal-open': showCreateModal }" style="background-color: rgba(0,0,0,0.4)">
+            <div class="modal-box max-w-xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
+                {{-- Decorative background glow --}}
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 blur-[100px] rounded-full"></div>
+                
+                {{-- Fixed Header --}}
+                <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
+                    <div>
+                        <h3 class="text-2xl font-black tracking-tight">New Author</h3>
+                        <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Contributor Profile</p>
+                    </div>
+                    <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                 </div>
-                <form action="{{ route('authors.store') }}" method="POST" class="space-y-4">
+
+                <form action="{{ route('authors.store') }}" method="POST" class="flex flex-col flex-grow overflow-hidden">
                     @csrf
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Author Name</span></label>
-                        <input type="text" name="name" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl" required placeholder="Author's full name">
+                    
+                    {{-- Scrollable Content Body --}}
+                    <div class="flex-grow overflow-y-auto p-8 pt-6 space-y-6 scrollbar-thin relative z-10">
+                        <div class="form-control">
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Author Name</span></label>
+                            <input type="text" name="name" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-14 text-white placeholder:text-white/20 transition-all font-bold" required placeholder="Author's full name">
+                        </div>
+                        <div class="form-control">
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Biography</span></label>
+                            <textarea name="bio" class="textarea bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-40 leading-relaxed text-sm py-4 text-white placeholder:text-white/20 transition-all" placeholder="Brief biography of the author"></textarea>
+                        </div>
                     </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Biography</span></label>
-                        <textarea name="bio" class="textarea textarea-bordered focus:textarea-primary bg-base-200 border-base-300 rounded-xl h-32" placeholder="Brief biography of the author"></textarea>
-                    </div>
-                    <div class="modal-action mt-8">
-                        <button type="button" @click="showCreateModal = false" class="btn btn-ghost rounded-xl">Cancel</button>
-                        <button type="submit" class="btn btn-primary rounded-xl px-8">Save Author</button>
+
+                    {{-- Fixed Action Footer --}}
+                    <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
+                        <button type="button" @click="showCreateModal = false" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all">Cancel</button>
+                        <button type="submit" class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:scale-105 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] rounded-xl px-10 h-12 shadow-xl shadow-primary/20 transition-all duration-300">
+                            Save Author
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- Edit Modal -->
-        <div class="modal" :class="{ 'modal-open': showEditModal }" style="background-color: rgba(0,0,0,0.5)">
-            <div class="modal-box max-w-xl rounded-[2rem] p-8 border border-white/10 shadow-2xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold">Edit Author</h3>
-                    <button @click="showEditModal = false" class="btn btn-sm btn-circle btn-ghost">✕</button>
+        <div class="modal backdrop-blur-md" :class="{ 'modal-open': showEditModal }" style="background-color: rgba(0,0,0,0.4)">
+            <div class="modal-box max-w-xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
+                {{-- Decorative background glow --}}
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-warning/10 blur-[100px] rounded-full"></div>
+                
+                {{-- Fixed Header --}}
+                <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
+                    <div>
+                        <h3 class="text-2xl font-black tracking-tight">Edit Author</h3>
+                        <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Update Profile</p>
+                    </div>
+                    <button @click="showEditModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                 </div>
-                <form :action="'{{ url('authors') }}/' + editData.id" method="POST" class="space-y-4">
+
+                <form :action="'{{ url('authors') }}/' + editData.id" method="POST" class="flex flex-col flex-grow overflow-hidden">
                     @csrf
                     @method('PATCH')
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Author Name</span></label>
-                        <input type="text" name="name" x-model="editData.name" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl" required>
+                    
+                    {{-- Scrollable Content Body --}}
+                    <div class="flex-grow overflow-y-auto p-8 pt-6 space-y-6 scrollbar-thin relative z-10">
+                        <div class="form-control">
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Author Name</span></label>
+                            <input type="text" name="name" x-model="editData.name" class="input w-full bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-xl h-14 text-white transition-all font-bold" required>
+                        </div>
+                        <div class="form-control">
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Biography</span></label>
+                            <textarea name="bio" x-model="editData.bio" class="textarea bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-xl h-40 leading-relaxed text-sm py-4 text-white transition-all"></textarea>
+                        </div>
                     </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Biography</span></label>
-                        <textarea name="bio" x-model="editData.bio" class="textarea textarea-bordered focus:textarea-primary bg-base-200 border-base-300 rounded-xl h-32"></textarea>
-                    </div>
-                    <div class="modal-action mt-8">
-                        <button type="button" @click="showEditModal = false" class="btn btn-ghost rounded-xl">Cancel</button>
-                        <button type="submit" class="btn btn-warning rounded-xl px-8 text-warning-content">Update Author</button>
+
+                    {{-- Fixed Action Footer --}}
+                    <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
+                        <button type="button" @click="showEditModal = false" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all">Cancel</button>
+                        <button type="submit" class="btn border-none bg-gradient-to-r from-warning to-warning-focus hover:scale-105 active:scale-95 text-warning-content font-black uppercase tracking-widest text-[10px] rounded-xl px-10 h-12 shadow-xl shadow-warning/20 transition-all duration-300">
+                            Update Author
+                        </button>
                     </div>
                 </form>
             </div>

@@ -17,8 +17,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
                 <div class="stat-figure text-primary text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">📚</div>
-                <div class="stat-title text-base-content/40 text-xs font-bold uppercase tracking-widest">Books in Catalog</div>
-                <div class="stat-value text-4xl font-extrabold mt-1">{{ $stats['total_books'] ?? 0 }}</div>
+                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest">Books in Catalog</div>
+                <div class="stat-value text-4xl font-extrabold mt-1 text-white">{{ $stats['total_books'] ?? 0 }}</div>
                 <div class="stat-desc text-primary font-semibold mt-2 flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                     24 new this week
@@ -27,8 +27,8 @@
 
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
                 <div class="stat-figure text-secondary text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">👥</div>
-                <div class="stat-title text-base-content/40 text-xs font-bold uppercase tracking-widest">Active Students</div>
-                <div class="stat-value text-4xl font-extrabold mt-1">{{ $stats['total_students'] ?? 0 }}</div>
+                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest">Active Students</div>
+                <div class="stat-value text-4xl font-extrabold mt-1 text-white">{{ $stats['total_students'] ?? 0 }}</div>
                 <div class="stat-desc text-secondary font-semibold mt-2 flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                     12 new members
@@ -37,15 +37,15 @@
 
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
                 <div class="stat-figure text-accent text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">📤</div>
-                <div class="stat-title text-base-content/40 text-xs font-bold uppercase tracking-widest">Active Borrows</div>
-                <div class="stat-value text-4xl font-extrabold mt-1">{{ $stats['active_borrows'] ?? 0 }}</div>
+                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest">Active Borrows</div>
+                <div class="stat-value text-4xl font-extrabold mt-1 text-white">{{ $stats['active_borrows'] ?? 0 }}</div>
                 <div class="stat-desc text-accent font-semibold mt-2">Books currently out</div>
             </div>
 
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
                 <div class="stat-figure text-error text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">⚠️</div>
-                <div class="stat-title text-base-content/40 text-xs font-bold uppercase tracking-widest">Overdue Items</div>
-                <div class="stat-value text-4xl font-extrabold mt-1">{{ $stats['overdue_items'] ?? 0 }}</div>
+                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest">Overdue Items</div>
+                <div class="stat-value text-4xl font-extrabold mt-1 text-white">{{ $stats['overdue_items'] ?? 0 }}</div>
                 <div class="stat-desc text-error font-semibold mt-2 hover:underline cursor-pointer">View overdue details</div>
             </div>
         </div>
@@ -56,13 +56,13 @@
             <div class="lg:col-span-2 space-y-8">
                 <!-- Overdue Alert Section -->
                 @if($overdueTransactions->count() > 0)
-                <div class="bg-base-100 rounded-[2rem] overflow-hidden border border-error/20 shadow-sm">
-                    <div class="p-8 flex justify-between items-center bg-error/5 border-b border-error/10">
+                <div class="glass glass-card overflow-hidden border-error/30 shadow-2xl">
+                    <div class="p-8 flex justify-between items-center bg-error/10 border-b border-error/20">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 bg-error rounded-2xl flex items-center justify-center text-error-content shadow-sm">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                             </div>
-                            <h3 class="text-xl font-bold text-error tracking-tight">Overdue Alerts</h3>
+                            <h3 class="text-xl font-bold text-white tracking-tight">Overdue Alerts</h3>
                         </div>
                         <a href="{{ route('borrow-transactions.overdue') }}" class="btn btn-error btn-sm rounded-xl font-bold">Process Returns</a>
                     </div>
@@ -101,14 +101,14 @@
                             <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
-                            <h3 class="text-xl font-bold">Recent Transactions</h3>
+                            <h3 class="text-xl font-bold text-white">Recent Transactions</h3>
                         </div>
                         <a href="{{ route('borrow-transactions.index') }}" class="btn btn-ghost btn-sm text-primary font-bold">View History</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="table table-lg">
                             <thead>
-                                <tr class="bg-base-200/30">
+                                <tr class="bg-base-200/30 text-white/70">
                                     <th class="py-4">Student</th>
                                     <th>Status</th>
                                     <th class="text-right">Action</th>
@@ -125,8 +125,8 @@
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <div class="font-bold">{{ $transaction->student->name }}</div>
-                                                    <div class="text-xs opacity-50">{{ Str::limit($transaction->book->title, 25) }}</div>
+                                                    <div class="font-bold text-white">{{ $transaction->student->name }}</div>
+                                                    <div class="text-xs text-white/50">{{ Str::limit($transaction->book->title, 25) }}</div>
                                                 </div>
                                             </div>
                                         </td>

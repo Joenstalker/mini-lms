@@ -1,9 +1,9 @@
 <x-app-layout>
     <div class="space-y-6">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="glass text-white rounded-[2rem] p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-white/10 mb-6">
             <div>
-                <h1 class="text-3xl font-bold">{{ $student->name }}</h1>
-                <p class="text-base-content/60 mt-2">Student Profile & Borrowing History</p>
+                <h1 class="text-4xl font-bold">{{ $student->name }}</h1>
+                <p class="text-lg text-white/60 mt-2 font-medium">Student Profile & Borrowing History</p>
             </div>
             <div class="flex gap-2">
                 <a href="{{ route('students.edit', $student) }}" class="btn btn-outline">Edit</a>
@@ -13,63 +13,63 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Student Info -->
-            <div class="lg:col-span-2 bg-base-200 rounded-lg shadow-md p-8">
+            <div class="lg:col-span-2 glass-card rounded-[2rem] shadow-xl p-8 border border-white/10 text-white">
                 <h2 class="text-xl font-bold mb-6">Student Information</h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="text-sm opacity-50">Email</label>
-                        <div class="font-semibold">{{ $student->email }}</div>
+                        <label class="text-sm text-white/40 uppercase tracking-widest font-bold">Email</label>
+                        <div class="font-bold text-lg text-white">{{ $student->email }}</div>
                     </div>
                     <div>
-                        <label class="text-sm opacity-50">Phone</label>
-                        <div class="font-semibold">{{ $student->phone ?? 'Not provided' }}</div>
+                        <label class="text-sm text-white/40 uppercase tracking-widest font-bold">Phone</label>
+                        <div class="font-bold text-lg text-white">{{ $student->phone ?? 'Not provided' }}</div>
                     </div>
                     <div>
-                        <label class="text-sm opacity-50">Address</label>
-                        <div class="font-semibold">{{ $student->address ?? 'Not provided' }}</div>
+                        <label class="text-sm text-white/40 uppercase tracking-widest font-bold">Address</label>
+                        <div class="font-bold text-lg text-white">{{ $student->address ?? 'Not provided' }}</div>
                     </div>
                     <div class="divider"></div>
                     <div>
-                        <label class="text-sm opacity-50">Member Since</label>
-                        <div class="font-semibold">{{ $student->created_at->format('F d, Y') }}</div>
+                        <label class="text-sm text-white/40 uppercase tracking-widest font-bold">Member Since</label>
+                        <div class="font-bold text-lg text-white">{{ $student->created_at->format('F d, Y') }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Stats Card -->
-            <div class="bg-base-200 rounded-lg shadow-md p-8">
+            <div class="glass-card rounded-[2rem] shadow-xl p-8 border border-white/10 text-white">
                 <h2 class="text-xl font-bold mb-6">Activity Summary</h2>
                 <div class="space-y-4">
                     <div>
                         <div class="text-3xl font-bold text-primary">
                             {{ $student->borrowTransactions()->whereIn('status', ['borrowed', 'partially_returned'])->count() }}
                         </div>
-                        <div class="text-sm opacity-50">Active Borrows</div>
+                        <div class="text-[10px] text-white/40 uppercase tracking-widest font-bold">Active Borrows</div>
                     </div>
                     <div class="divider"></div>
                     <div>
                         <div class="text-3xl font-bold text-error">
                             {{ $student->borrowTransactions()->whereIn('status', ['borrowed', 'partially_returned'])->where('due_date', '<', now())->count() }}
                         </div>
-                        <div class="text-sm opacity-50">Overdue Books</div>
+                        <div class="text-[10px] text-white/40 uppercase tracking-widest font-bold">Overdue Books</div>
                     </div>
                     <div class="divider"></div>
                     <div>
                         <div class="text-3xl font-bold text-warning">
                             ₱{{ number_format($student->borrowTransactions()->where('status', '!=', 'returned')->sum('fine_amount'), 2) }}
                         </div>
-                        <div class="text-sm opacity-50">Outstanding Fines</div>
+                        <div class="text-[10px] text-white/40 uppercase tracking-widest font-bold">Outstanding Fines</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Borrowing History -->
-        <div class="bg-base-200 rounded-lg shadow-md p-8">
-            <h2 class="text-xl font-bold mb-6">Borrowing History</h2>
+        <div class="glass-card rounded-[2rem] shadow-xl p-8 border border-white/10 text-white">
+            <h2 class="text-2xl font-bold mb-6">Borrowing History</h2>
             <div class="overflow-x-auto">
-                <table class="table">
-                    <thead>
+                <table class="table text-white">
+                    <thead class="bg-base-200/50 text-white border-b border-white/10">
                         <tr>
                             <th>Book</th>
                             <th>Borrow Date</th>

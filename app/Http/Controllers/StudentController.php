@@ -92,11 +92,15 @@ class StudentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Student $student)
+    public function show(Student $student, Request $request)
     {
         $student->load('borrowTransactions.book');
         $borrowTransactions = $student->borrowTransactions()->paginate(10);
         
+        if ($request->ajax()) {
+            return view('students.partials.details', compact('student', 'borrowTransactions'))->render();
+        }
+
         return view('students.show', compact('student', 'borrowTransactions'));
     }
 
