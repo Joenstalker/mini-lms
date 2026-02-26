@@ -79,19 +79,19 @@
             /* Tablet/Laptop Entry (1024px+) */
             @media (min-width: 64rem) {
                 .main-container {
-                    padding: 4vw 6vw;
+                    padding: 3vw 5vw;
                     flex-direction: row;
-                    gap: 4rem;
+                    gap: 3rem;
                 }
-                h1 { font-size: 3.5rem !important; }
+                h1 { font-size: 3rem !important; }
             }
 
             /* Intermediate Laptop (1366px) */
             @media (min-width: 85.375rem) {
                 .main-container {
-                    padding: 5vw 8vw;
+                    padding: 4vw 7vw;
                 }
-                h1 { font-size: 4rem !important; }
+                h1 { font-size: 3.5rem !important; }
             }
 
             @keyframes fadeInUp {
@@ -151,25 +151,25 @@
                     Log in to continue...
                 </p>
                 
-                <div class="mt-8 flex flex-wrap gap-6 items-center opacity-0 animate-fade-in-up" style="animation-delay: 0.6s;">
-                    <div class="glass-style px-6 py-4 rounded-2xl">
-                        <div class="text-3xl font-bold">Smart</div>
-                        <div class="text-white/80 text-[0.7rem] uppercase tracking-widest font-bold">Automation</div>
+                <div class="mt-6 flex flex-wrap gap-4 items-center opacity-0 animate-fade-in-up" style="animation-delay: 0.6s;">
+                    <div class="glass-style px-5 py-3 rounded-2xl">
+                        <div class="text-2xl font-bold">Smart</div>
+                        <div class="text-white/80 text-[0.6rem] uppercase tracking-widest font-bold">Automation</div>
                     </div>
-                    <div class="glass-style px-6 py-4 rounded-2xl">
-                        <div class="text-3xl font-bold">₱10</div>
-                        <div class="text-white/80 text-[0.7rem] uppercase tracking-widest font-bold">Fine / Day</div>
+                    <div class="glass-style px-5 py-3 rounded-2xl">
+                        <div class="text-2xl font-bold">₱10</div>
+                        <div class="text-white/80 text-[0.6rem] uppercase tracking-widest font-bold">Fine / Day</div>
                     </div>
                 </div>
             </div>
 
             {{-- Right Side: High-Contrast Glass Login Card --}}
-            <div class="w-full max-w-[min(95%,28rem)] sm:max-w-md responsive-card">
-                <div class="glass-style rounded-[2.5rem] p-8 sm:p-10 lg:p-12 overflow-hidden animate-fade-in-right">
+            <div class="w-full max-w-[min(95%,26rem)] sm:max-w-md responsive-card">
+                <div class="glass-style rounded-[2rem] p-6 sm:p-8 lg:p-10 overflow-hidden animate-fade-in-right">
                     
-                    <div class="text-center mb-8">
-                        <h2 class="text-3xl font-extrabold text-white">Log in</h2>
-                        <div class="w-12 h-1 bg-primary mx-auto mt-4 rounded-full"></div>
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-extrabold text-white">Log in</h2>
+                        <div class="w-10 h-1 bg-primary mx-auto mt-2 rounded-full"></div>
                     </div>
 
                     {{-- Session Status --}}
@@ -186,7 +186,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('login') }}" class="space-y-6" onsubmit="showLoading('Signing you in...')">
+                    <form method="POST" action="{{ route('login') }}" class="space-y-4" onsubmit="showLoading('Signing you in...')">
                         @csrf
 
                         {{-- Email --}}
