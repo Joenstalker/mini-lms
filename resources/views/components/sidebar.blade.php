@@ -36,7 +36,7 @@
 <div class="flex flex-col h-full bg-base-200 w-full overflow-hidden">
     <!-- Brand -->
     <div class="transition-all duration-300" :class="sidebarCollapsed ? 'p-2 py-4' : 'p-6'">
-        <a href="{{ route('home') }}" class="flex items-center gap-3 no-underline group justify-center lg:justify-start">
+        <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-3 no-underline group justify-center lg:justify-start">
             <div class="w-10 h-10 bg-primary rounded-xl flex-shrink-0 flex items-center justify-center text-primary-content group-hover:bg-primary/90 transition-all duration-300"
                  :class="sidebarCollapsed ? 'w-10 h-10 rounded-xl' : 'w-10 h-10 rounded-xl'">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +63,7 @@
                     $isActive = request()->routeIs($item['route'] . '*') || (isset($item['pattern']) && request()->is($item['pattern']));
                 @endphp
                 <li>
-                    <a href="{{ route($item['route']) }}" 
+                    <a href="{{ route($item['route']) }}" wire:navigate
                        @class([
                            'flex items-center py-3 rounded-xl transition-all duration-300 group',
                            'bg-primary text-primary-content shadow-lg shadow-primary/20' => $isActive,

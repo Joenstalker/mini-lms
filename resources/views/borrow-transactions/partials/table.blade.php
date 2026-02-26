@@ -38,12 +38,12 @@
                     </td>
                     <td>
                         <div class="flex gap-1">
-                            <a href="{{ route('borrow-transactions.show', $transaction) }}" class="btn btn-sm btn-ghost hover:bg-info/20 hover:text-info transition-all duration-300 rounded-lg group" title="View Transaction Details">
+                            <button @click="fetchDetails('{{ route('borrow-transactions.show', $transaction) }}')" class="btn btn-sm btn-ghost hover:bg-info/20 hover:text-info transition-all duration-300 rounded-lg group" title="View Transaction Details">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9l6 6m0-6l-6 6"></path>
                                 </svg>
-                            </a>
+                            </button>
                         </div>
                     </td>
                 </tr>

@@ -117,12 +117,35 @@
                     </button>
                 </div>
             </div>
-            <button @click="showCreateModal = true" class="btn btn-primary btn-lg rounded-xl shadow-md transition-all">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Add New Book
-            </button>
+            <!-- Sort and Filter Dropdowns -->
+            <div class="flex items-center gap-2">
+                <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="btn btn-ghost btn-sm rounded-xl gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+                        </svg>
+                        Sort
+                    </label>
+                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-xl w-52 border border-base-200 mt-2">
+                        <li><a @click="updateSort('newest')" :class="{'active': sort === 'newest'}">Newest First</a></li>
+                        <li><a @click="updateSort('oldest')" :class="{'active': sort === 'oldest'}">Oldest First</a></li>
+                        <li><a @click="updateSort('title_asc')" :class="{'active': sort === 'title_asc'}">Title A-Z</a></li>
+                        <li><a @click="updateSort('title_desc')" :class="{'active': sort === 'title_desc'}">Title Z-A</a></li>
+                    </ul>
+                </div>
+                <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="btn btn-ghost btn-sm rounded-xl gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        Filter
+                    </label>
+                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-xl w-52 border border-base-200 mt-2">
+                        <li><a @click="updateFilter('')" :class="{'active': filter === ''}">All Books</a></li>
+                        <li><a @click="updateFilter('new')" :class="{'active': filter === 'new'}">Newly Added (7 days)</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
         @endauth
 
@@ -748,6 +771,8 @@
                     showDetailsModal: false,
                     showData: { id: '', title: '', publisher: '', published_year: '', total_quantity: '', available_quantity: '', description: '', authors: [], cover_image: '' },
                     search: '{{ $search ?? '' }}',
+                    sort: '{{ $sort ?? 'newest' }}',
+                    filter: '{{ $filter ?? '' }}',
                     isLoading: false,
 
                     handleImageUpload(event, type) {
@@ -910,6 +935,20 @@
                         } else {
                             url.searchParams.delete('search');
                         }
+                        
+                        // Add sort parameter
+                        if (this.sort && this.sort !== 'newest') {
+                            url.searchParams.set('sort', this.sort);
+                        } else {
+                            url.searchParams.delete('sort');
+                        }
+                        
+                        // Add filter parameter
+                        if (this.filter && this.filter !== '') {
+                            url.searchParams.set('filter', this.filter);
+                        } else {
+                            url.searchParams.delete('filter');
+                        }
 
                         try {
                             const response = await fetch(url.toString(), {
@@ -935,12 +974,20 @@
 
                     async performSearch() {
                         await this.syncTable();
+                    },
+                    
+                    async updateSort(newSort) {
+                        this.sort = newSort;
+                        await this.syncTable();
+                    },
+                    
+                    async updateFilter(newFilter) {
+                        this.filter = newFilter;
+                        await this.syncTable();
                     }
                 }));
             });
 
         </script>
-
-        </div>
     </div>
 </x-app-layout>

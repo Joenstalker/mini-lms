@@ -4,15 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Traits\QueryOptimizer;
 
 class Student extends Model
 {
+    use QueryOptimizer;
     protected $fillable = [
         'name',
         'email',
         'phone',
         'address',
-        'pin',
     ];
 
     public function borrowTransactions(): HasMany

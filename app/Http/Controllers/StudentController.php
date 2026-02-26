@@ -15,6 +15,8 @@ class StudentController extends Controller
     {
         $search = $request->input('search');
         $filter = $request->input('filter');
+        $sort = $request->input('sort', 'newest'); // Default to newest first
+
         $query = Student::with('borrowTransactions');
 
         if ($search) {
@@ -31,13 +33,35 @@ class StudentController extends Controller
             });
         }
 
+        // Apply sorting - newest first by default
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'name_asc':
+                $query->orderBy('name', 'asc');
+                break;
+            case 'name_desc':
+                $query->orderBy('name', 'desc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        // Filter for newly added records (last 7 days)
+        if ($filter === 'new') {
+            $query->where('created_at', '>=', now()->subDays(7));
+        }
+
         $students = $query->paginate(15)->withQueryString();
 
         if ($request->ajax()) {
             return view('students.partials.table', compact('students'))->render();
         }
 
-        return view('students.index', compact('students', 'search'));
+        return view('students.index', compact('students', 'search', 'filter', 'sort'));
     }
 
     /**
@@ -54,11 +78,10 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students',
-            'phone' => 'nullable|string|max:20',
+            'name'    => 'required|string|max:255',
+            'email'   => 'required|email|unique:students',
+            'phone'   => 'nullable|string|max:20',
             'address' => 'nullable|string',
-            'pin' => 'required|string|min:4|max:6|unique:students,pin',
         ]);
 
         $student = Student::create($validated);
@@ -91,11 +114,10 @@ class StudentController extends Controller
     public function update(Request $request, Student $student)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email,' . $student->id,
-            'phone' => 'nullable|string|max:20',
+            'name'    => 'required|string|max:255',
+            'email'   => 'required|email|unique:students,email,' . $student->id,
+            'phone'   => 'nullable|string|max:20',
             'address' => 'nullable|string',
-            'pin' => 'required|string|min:4|max:6|unique:students,pin,' . $student->id,
         ]);
 
         $student->update($validated);

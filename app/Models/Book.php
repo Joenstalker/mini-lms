@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Traits\QueryOptimizer;
 
 class Book extends Model
 {
+    use QueryOptimizer;
     protected $fillable = [
         'title',
         'description',

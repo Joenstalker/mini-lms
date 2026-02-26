@@ -22,7 +22,7 @@
             })();
         </script>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Mini-LMS') }} - Smart Library Management</title>
@@ -32,11 +32,63 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+        <style>
+            .no-transition, .no-transition * {
+                transition: none !important;
+                animation: none !important;
+            }
+
+            /* Fluid Typography & Scaling */
+            :root {
+                --side-nav-width: 16rem;
+                --side-nav-collapsed: 4rem;
+            }
+
+            @media (min-width: 85.375rem) { /* 1366px laptop */
+                html { font-size: 105%; } 
+                .dashboard-grid { gap: 2rem !important; }
+            }
+
+            @media (min-width: 120rem) { /* 1920px desktop */
+                html { font-size: 110%; }
+            }
+
+            /* User Requested Fluid Logic */
+            .fluid-container {
+                width: 95%;
+                max-width: 1400px; /* Increased from 1200px for better fit */
+                margin: 0 auto;
+                padding: 1rem;
+            }
+
+            /* Laptop screens (~1366px) */
+            @media (max-width: 1366px) {
+                .dashboard-grid-logic {
+                    grid-template-columns: 1fr !important; /* stack columns */
+                    font-size: 0.95rem;
+                }
+                .dashboard-padding {
+                    padding: 1.5rem !important;
+                }
+            }
+
+            /* Larger desktops (1920px and above) */
+            @media (min-width: 1920px) {
+                .dashboard-grid-logic {
+                    grid-template-columns: 2fr 1fr !important; /* split columns */
+                    font-size: 1rem;
+                }
+                .dashboard-padding {
+                    padding: 2.5rem !important;
+                }
+            }
+        </style>
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased text-base-content min-h-screen selection:bg-primary selection:text-primary-content"
-          style="background-image: url('{{ asset('build/images/library-background.png') }}'); background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat;">
+          style="background-image: url('{{ asset('images/library-background.png') }}'); background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat;">
 
         {{-- Overlay to keep content readable --}}
         <div class="fixed inset-0 bg-base-100/80 backdrop-blur-[2px] -z-10 pointer-events-none"></div>
@@ -82,9 +134,11 @@
 
                 <!-- Main Content Area -->
                 <main class="flex-grow">
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <turbo-frame id="main-content">
+                    <div class="fluid-container mx-auto py-[2vh] animate-in fade-in slide-in-from-bottom-4 duration-700">
                         {{ $slot }}
                     </div>
+                    </turbo-frame>
                 </main>
 
                 <!-- SweetAlert2 Scripts -->
@@ -214,7 +268,8 @@
                 </div>
 
             <!-- Sidebar -->
-            <div class="drawer-side z-50 transition-all duration-300 overflow-hidden" :class="sidebarCollapsed ? 'w-16' : 'w-64'">
+            <div id="spa-sidebar" data-turbo-permanent class="drawer-side z-50 transition-all duration-300 overflow-hidden" 
+                 :style="sidebarCollapsed ? 'width: var(--side-nav-collapsed)' : 'width: var(--side-nav-width)'">
                 <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
                 <x-sidebar />
             </div>
@@ -225,7 +280,7 @@
             <div class="container mx-auto px-4">
                 <div class="navbar h-20">
                     <div class="flex-1">
-                        <a href="{{ route('home') }}" class="group flex items-center gap-3 no-underline">
+                        <a href="{{ route('dashboard') }}" class="group flex items-center gap-3 no-underline">
                             <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-content shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>

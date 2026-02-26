@@ -18,7 +18,7 @@
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
                 <div class="stat-figure text-primary text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">📚</div>
                 <div class="stat-title text-base-content/40 text-xs font-bold uppercase tracking-widest">Books in Catalog</div>
-                <div class="stat-value text-4xl font-extrabold mt-1">{{ \App\Models\Book::count() }}</div>
+                <div class="stat-value text-4xl font-extrabold mt-1">{{ $stats['total_books'] ?? 0 }}</div>
                 <div class="stat-desc text-primary font-semibold mt-2 flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                     24 new this week
@@ -28,7 +28,7 @@
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
                 <div class="stat-figure text-secondary text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">👥</div>
                 <div class="stat-title text-base-content/40 text-xs font-bold uppercase tracking-widest">Active Students</div>
-                <div class="stat-value text-4xl font-extrabold mt-1">{{ \App\Models\Student::count() }}</div>
+                <div class="stat-value text-4xl font-extrabold mt-1">{{ $stats['total_students'] ?? 0 }}</div>
                 <div class="stat-desc text-secondary font-semibold mt-2 flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                     12 new members
@@ -38,32 +38,23 @@
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
                 <div class="stat-figure text-accent text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">📤</div>
                 <div class="stat-title text-base-content/40 text-xs font-bold uppercase tracking-widest">Active Borrows</div>
-                <div class="stat-value text-4xl font-extrabold mt-1">{{ \App\Models\BorrowTransaction::whereIn('status', ['borrowed', 'partially_returned'])->count() }}</div>
+                <div class="stat-value text-4xl font-extrabold mt-1">{{ $stats['active_borrows'] ?? 0 }}</div>
                 <div class="stat-desc text-accent font-semibold mt-2">Books currently out</div>
             </div>
 
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
                 <div class="stat-figure text-error text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">⚠️</div>
                 <div class="stat-title text-base-content/40 text-xs font-bold uppercase tracking-widest">Overdue Items</div>
-                <div class="stat-value text-4xl font-extrabold mt-1">{{ \App\Models\BorrowTransaction::whereIn('status', ['borrowed', 'partially_returned'])->where('due_date', '<', now())->count() }}</div>
+                <div class="stat-value text-4xl font-extrabold mt-1">{{ $stats['overdue_items'] ?? 0 }}</div>
                 <div class="stat-desc text-error font-semibold mt-2 hover:underline cursor-pointer">View overdue details</div>
             </div>
         </div>
 
         <!-- Layout Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid gap-8 dashboard-grid-logic dashboard-padding">
             <!-- Left Side: Overdue & Transactions -->
             <div class="lg:col-span-2 space-y-8">
                 <!-- Overdue Alert Section -->
-                @php
-                    $overdueTransactions = \App\Models\BorrowTransaction::with(['student', 'book'])
-                        ->whereIn('status', ['borrowed', 'partially_returned'])
-                        ->where('due_date', '<', now())
-                        ->latest()
-                        ->limit(3)
-                        ->get();
-                @endphp
-
                 @if($overdueTransactions->count() > 0)
                 <div class="bg-base-100 rounded-[2rem] overflow-hidden border border-error/20 shadow-sm">
                     <div class="p-8 flex justify-between items-center bg-error/5 border-b border-error/10">
@@ -124,7 +115,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse (\App\Models\BorrowTransaction::with('student', 'book')->latest()->limit(5)->get() as $transaction)
+                                @forelse ($recentTransactions as $transaction)
                                     <tr class="hover:bg-primary/5 transition-colors border-b border-base-200/50">
                                         <td class="py-4">
                                             <div class="flex items-center gap-4">

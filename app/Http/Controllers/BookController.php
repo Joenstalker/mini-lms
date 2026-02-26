@@ -14,8 +14,10 @@ class BookController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $sort = $request->input('sort', 'newest'); // Default to newest first
+        $filter = $request->input('filter');
 
-        $query = Book::with('authors');
+        $query = Book::with(['authors', 'borrowTransactions']);
 
         if ($search) {
             $query->where(function($q) use ($search) {
@@ -26,9 +28,35 @@ class BookController extends Controller
             });
         }
 
-        $books = $query->get();
+        // Apply sorting - newest first by default
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'title_asc':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'title_desc':
+                $query->orderBy('title', 'desc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
 
-        return view('books.index', compact('books', 'search'));
+        // Filter for newly added records (last 7 days)
+        if ($filter === 'new') {
+            $query->where('created_at', '>=', now()->subDays(7));
+        }
+
+        $books = $query->paginate(15)->withQueryString();
+
+        if ($request->ajax()) {
+            return view('books.partials.table', compact('books'))->render();
+        }
+
+        return view('books.index', compact('books', 'search', 'sort', 'filter'));
     }
 
     /**

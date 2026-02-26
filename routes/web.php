@@ -5,48 +5,51 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\BorrowTransactionController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
-// Public routes
-Route::get('/', [BookController::class, 'index'])->name('home');
-Route::get('books', [BookController::class, 'index'])->name('books.index');
-Route::get('books/{book}', [BookController::class, 'show'])->name('books.show');
-Route::get('authors', [AuthorController::class, 'index'])->name('authors.index');
-Route::get('authors/{author}', [AuthorController::class, 'show'])->name('authors.show');
+// Root route: show the login page (welcome) for guests, redirect to dashboard for logged-in admins
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return view('welcome');
+})->name('home');
 
-// Public Borrowing for Students
-Route::get('borrow-transactions/create', [BorrowTransactionController::class, 'create'])->name('borrow-transactions.create');
-Route::post('borrow-transactions', [BorrowTransactionController::class, 'store'])->name('borrow-transactions.store');
-Route::get('students/{student}/borrow-history', [BorrowTransactionController::class, 'studentHistory'])->name('borrow-transactions.student-history');
-Route::get('borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'show'])->name('borrow-transactions.show');
-
-// Authenticated routes
+// All routes require authentication — this is a physical library admin tool
 Route::middleware('auth')->group(function () {
+
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profile management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Student Management
+    // Books (full CRUD, admin only)
+    Route::get('/books', [BookController::class, 'index'])->name('books.index');
+    Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
+    Route::post('/books', [BookController::class, 'store'])->name('books.store');
+    Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
+    Route::get('/books/{book}/edit', [BookController::class, 'edit'])->name('books.edit');
+    Route::put('/books/{book}', [BookController::class, 'update'])->name('books.update');
+    Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
+
+    // Authors (full CRUD, admin only)
+    Route::resource('authors', AuthorController::class);
+
+    // Students (full CRUD, admin only)
     Route::resource('students', StudentController::class);
 
-    // Author Management
-    Route::resource('authors', AuthorController::class)->except(['index', 'show']);
-
-    // Book Management
-    Route::resource('books', BookController::class)->except(['index', 'show']);
-
-    // Admin Borrow Management
-    Route::get('borrow-transactions', [BorrowTransactionController::class, 'index'])->name('borrow-transactions.index');
-    Route::get('borrow-transactions/overdue', [BorrowTransactionController::class, 'overdue'])->name('borrow-transactions.overdue');
-    Route::delete('borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'destroy'])->name('borrow-transactions.destroy');
-    Route::get('borrow-transactions/{borrow_transaction}/edit', [BorrowTransactionController::class, 'edit'])->name('borrow-transactions.edit');
-    Route::patch('borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'update'])->name('borrow-transactions.update');
+    // Borrow Transactions (admin processes all borrowing/returning)
+    Route::get('/borrow-transactions', [BorrowTransactionController::class, 'index'])->name('borrow-transactions.index');
+    Route::get('/borrow-transactions/create', [BorrowTransactionController::class, 'create'])->name('borrow-transactions.create');
+    Route::post('/borrow-transactions', [BorrowTransactionController::class, 'store'])->name('borrow-transactions.store');
+    Route::get('/borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'show'])->name('borrow-transactions.show');
+    Route::get('/borrow-transactions/{borrow_transaction}/edit', [BorrowTransactionController::class, 'edit'])->name('borrow-transactions.edit');
+    Route::patch('/borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'update'])->name('borrow-transactions.update');
+    Route::delete('/borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'destroy'])->name('borrow-transactions.destroy');
 });
 
 require __DIR__.'/auth.php';

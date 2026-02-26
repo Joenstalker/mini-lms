@@ -13,6 +13,9 @@ class AuthorController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $sort = $request->input('sort', 'newest'); // Default to newest first
+        $filter = $request->input('filter');
+
         $query = Author::with('books');
 
         if ($search) {
@@ -22,13 +25,35 @@ class AuthorController extends Controller
             });
         }
 
+        // Apply sorting - newest first by default
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'name_asc':
+                $query->orderBy('name', 'asc');
+                break;
+            case 'name_desc':
+                $query->orderBy('name', 'desc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        // Filter for newly added records (last 7 days)
+        if ($filter === 'new') {
+            $query->where('created_at', '>=', now()->subDays(7));
+        }
+
         $authors = $query->paginate(15)->withQueryString();
 
         if ($request->ajax()) {
             return view('authors.partials.table', compact('authors'))->render();
         }
 
-        return view('authors.index', compact('authors', 'search'));
+        return view('authors.index', compact('authors', 'search', 'sort', 'filter'));
     }
 
     /**

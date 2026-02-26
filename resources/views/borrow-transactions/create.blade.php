@@ -13,8 +13,8 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold">Borrow a Book</h1>
-                    <p class="text-base-content/60 font-medium">Please identify yourself and select a book to borrow</p>
+                    <h1 class="text-3xl font-bold">New Borrow Transaction</h1>
+                    <p class="text-base-content/60 font-medium">Select the borrower and the book being checked out at the counter</p>
                 </div>
             </div>
 
@@ -23,17 +23,20 @@
 
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Your Student Profile *</span>
+                        <span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Student / Borrower *</span>
                     </label>
                     <select name="student_id" class="select select-bordered focus:select-primary bg-base-200 border-base-300 rounded-xl w-full" required>
-                        <option value="" disabled selected>Select your name</option>
-                        @foreach (\App\Models\Student::orderBy('name')->get() as $student)
+                        <option value="" disabled selected>Search by student name</option>
+                        @foreach ($students as $student)
                             <option value="{{ $student->id }}" {{ old('student_id', request('student_id')) == $student->id ? 'selected' : '' }}>
                                 {{ $student->name }}
+                                @if ($student->borrowTransactions->whereIn('status', ['borrowed','partially_returned'])->count())
+                                    — ({{ $student->borrowTransactions->whereIn('status', ['borrowed','partially_returned'])->count() }} active loan{{ $student->borrowTransactions->whereIn('status', ['borrowed','partially_returned'])->count() > 1 ? 's' : '' }})
+                                @endif
                             </option>
                         @endforeach
                     </select>
-                    <label class="label"><span class="label-text-alt opacity-50">Choose your name from the registered student list</span></label>
+                    <label class="label"><span class="label-text-alt opacity-50">Choose the student who is borrowing</span></label>
                 </div>
 
                 <div class="form-control">
@@ -42,9 +45,10 @@
                     </label>
                     <select name="book_id" class="select select-bordered focus:select-primary bg-base-200 border-base-300 rounded-xl w-full" required>
                         <option value="" disabled selected>Choose a book from the catalog</option>
-                        @foreach (\App\Models\Book::where('available_quantity', '>', 0)->orderBy('title')->get() as $book)
+                        @foreach ($books as $book)
                             <option value="{{ $book->id }}" {{ old('book_id', request('book_id')) == $book->id ? 'selected' : '' }}>
-                                {{ $book->title }} ({{ $book->available_quantity }} left)
+                                {{ $book->title }} — {{ $book->available_quantity }} available
+                                @if ($book->authors->count()) ({{ $book->authors->pluck('name')->join(', ') }}) @endif
                             </option>
                         @endforeach
                     </select>
