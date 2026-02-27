@@ -82,6 +82,7 @@ class StudentController extends Controller
             'email'   => 'required|email|unique:students',
             'phone'   => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'pin'     => 'required|string|size:6',
             'profile_image' => 'nullable|string',
         ]);
 
@@ -123,10 +124,19 @@ class StudentController extends Controller
             'email'   => 'required|email|unique:students,email,' . $student->id,
             'phone'   => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'pin'     => 'required|string|size:6',
             'profile_image' => 'nullable|string',
         ]);
 
         $student->update($validated);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Student updated successfully.',
+                'student' => $student
+            ]);
+        }
 
         return redirect()->route('students.show', $student)->with('success', 'Student updated successfully.');
     }

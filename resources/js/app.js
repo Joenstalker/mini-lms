@@ -13,7 +13,7 @@ Turbo.start();
 document.addEventListener('turbo:load', () => {
     // Update active nav link based on current URL
     const currentPath = window.location.pathname;
-    document.querySelectorAll('#spa-sidebar a[href]').forEach(link => {
+    document.querySelectorAll('#spa-sidebar nav a[href]').forEach(link => {
         const linkPath = new URL(link.href, window.location.origin).pathname;
         const isActive = currentPath === linkPath || currentPath.startsWith(linkPath + '/');
         // Re-apply active class

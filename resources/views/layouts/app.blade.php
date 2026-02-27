@@ -286,7 +286,7 @@
                 </div>
 
             <!-- Sidebar -->
-            <div id="spa-sidebar" data-turbo-permanent class="drawer-side z-50 transition-all duration-300 overflow-hidden w-[var(--side-nav-width)]">
+            <div id="spa-sidebar" class="drawer-side z-50 transition-all duration-300 overflow-hidden w-[var(--side-nav-width)]">
                 <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
                 <x-sidebar />
             </div>

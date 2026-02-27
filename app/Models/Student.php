@@ -14,6 +14,7 @@ class Student extends Model
         'email',
         'phone',
         'address',
+        'pin',
         'profile_image',
     ];
 

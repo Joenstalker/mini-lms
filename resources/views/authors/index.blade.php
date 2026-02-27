@@ -47,7 +47,7 @@
         <!-- Header -->
         <div class="glass text-white rounded-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-white/10">
             <div>
-                <h1 class="text-4xl font-bold">✍️ Authors Collection</h1>
+                <h1 class="text-4xl font-bold">Authors Collection</h1>
                 <p class="text-lg text-white/60 mt-2 font-medium">Browse and manage all book authors</p>
             </div>
 

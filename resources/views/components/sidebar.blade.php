@@ -36,16 +36,8 @@
 <div class="flex flex-col h-full glass w-full overflow-hidden border-r border-white/10 text-white">
     <!-- Brand -->
     <div class="p-6">
-        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 no-underline group justify-start">
-            <div class="w-10 h-10 bg-primary rounded-xl flex-shrink-0 flex items-center justify-center text-primary-content group-hover:bg-primary/90 transition-all duration-300">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>
-                </svg>
-            </div>
-            <div class="flex flex-col transition-all duration-300 overflow-hidden">
-                <span class="text-xl font-bold tracking-tight text-primary truncate">Mini-LMS</span>
-                <span class="text-[10px] uppercase tracking-widest opacity-50 font-bold truncate">Administrator</span>
-            </div>
+        <a href="{{ route('dashboard') }}" class="flex items-center no-underline group justify-start overflow-hidden">
+            <img src="{{ asset('images/lms-logo.png') }}" alt="Mini-LMS Logo" class="h-10 w-auto object-contain transition-all duration-300 group-hover:scale-105">
         </a>
     </div>
 
@@ -92,9 +84,13 @@
     <div class="p-4 mt-auto transition-all duration-300 px-4">
         <div class="glass rounded-2xl border transition-all duration-300 overflow-hidden p-2 border-white/10">
             <button @click="showProfileModal = true" class="flex items-center gap-3 p-2 justify-start w-full hover:bg-white/10 rounded-xl transition-all duration-300 group cursor-pointer">
-                <div class="avatar placeholder flex-shrink-0">
-                    <div class="bg-primary text-primary-content font-bold transition-all duration-300 rounded-full w-10 h-10">
-                        {{ substr(Auth::user()->name, 0, 1) }}
+                <div class="avatar @if(!Auth::user()->profile_image) placeholder @endif flex-shrink-0">
+                    <div class="bg-primary text-primary-content font-bold transition-all duration-300 rounded-full w-10 h-10 overflow-hidden">
+                        @if(Auth::user()->profile_image)
+                            <img src="{{ Auth::user()->profile_image }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                        @else
+                            {{ substr(Auth::user()->name, 0, 1) }}
+                        @endif
                     </div>
                 </div>
                 <div class="flex flex-col min-w-0 transition-all duration-300 text-left flex-grow">
