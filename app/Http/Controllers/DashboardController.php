@@ -21,7 +21,7 @@ class DashboardController extends Controller
         // Get recent overdue transactions with eager loading
         $overdueTransactions = BorrowTransaction::with(['student', 'book'])
             ->whereIn('status', ['borrowed', 'partially_returned'])
-            ->where('due_date', '<', now())
+            ->where('due_date', '<', now()->startOfDay())
             ->latest()
             ->limit(3)
             ->get();

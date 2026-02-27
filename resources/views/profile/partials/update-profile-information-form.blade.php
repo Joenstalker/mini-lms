@@ -4,9 +4,85 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6" 
+        x-data="{ 
+            imagePreview: '{{ auth()->user()->profile_image }}' || null,
+            loading: false,
+            handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.imagePreview = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
+            async submitForm(event) {
+                this.loading = true;
+                const formData = new FormData(event.target);
+                try {
+                    const response = await fetch('{{ route('profile.update') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Profile Updated',
+                            text: 'Your profile information has been saved.',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    } else {
+                        const data = await response.json();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Something went wrong.'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                } finally {
+                    this.loading = false;
+                }
+            }
+        }" @submit.prevent="submitForm($event)">
         @csrf
         @method('patch')
+        <input type="hidden" name="profile_image" x-model="imagePreview">
+
+        <div class="flex flex-col items-center space-y-4 mb-6">
+            <div class="relative group">
+                <div class="w-32 h-32 rounded-full bg-white/5 border-4 border-white/10 shadow-2xl overflow-hidden flex items-center justify-center transition-all group-hover:border-primary/50">
+                    <template x-if="imagePreview">
+                        <img :src="imagePreview" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="!imagePreview">
+                        <div class="flex flex-col items-center text-white/20">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                    </template>
+                </div>
+                <button type="button" @click="$refs.profileImageInput.click()" class="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+                <input type="file" x-ref="profileImageInput" @change="handleImageUpload($event)" class="hidden" accept="image/*">
+            </div>
+            <p class="text-xs font-bold text-white/30 uppercase tracking-widest mt-2">Click the camera icon to upload a new profile photo</p>
+        </div>
 
         <div>
             <x-input-label for="name" :value="__('Name')" />
@@ -39,17 +115,10 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
-
-            @if (session('status') === 'profile-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600 dark:text-gray-400"
-                >{{ __('Saved.') }}</p>
-            @endif
+            <x-primary-button x-bind:disabled="loading">
+                <span x-show="!loading">{{ __('Save') }}</span>
+                <span x-show="loading" class="loading loading-spinner loading-sm"></span>
+            </x-primary-button>
         </div>
     </form>
 </section>

@@ -3,9 +3,13 @@
         <div class="card glass-card hover:shadow-2xl transition-all duration-500 hover:border-primary/40 group/card">
             <div class="card-body space-y-4">
                 <div class="flex items-start gap-3">
-                    <div class="avatar placeholder">
-                        <div class="bg-primary/20 text-white rounded-xl w-14 h-14 font-extrabold text-xl shadow-inner border border-white/10">
-                            <span>{{ substr($author->name, 0, 1) }}</span>
+                    <div class="avatar shadow-xl border-2 border-white/20 rounded-xl overflow-hidden hover:scale-110 transition-transform duration-500">
+                        <div class="w-14 h-14 bg-primary/20 flex items-center justify-center">
+                            @if($author->profile_image)
+                                <img src="{{ $author->profile_image }}" class="w-full h-full object-cover">
+                            @else
+                                <span class="text-white font-extrabold text-xl">{{ substr($author->name, 0, 1) }}</span>
+                            @endif
                         </div>
                     </div>
                     <div>

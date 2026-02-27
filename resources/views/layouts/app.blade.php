@@ -156,10 +156,29 @@
                                 title: 'Success!',
                                 text: "{{ session('success') }}",
                                 confirmButtonColor: '#355872',
+                                border: 'none',
                                 customClass: {
-                                    popup: 'rounded-2xl border-none shadow-2xl',
-                                    confirmButton: 'rounded-xl px-8'
-                                }
+                                    popup: 'rounded-[1.5rem] bg-slate-900 text-white border border-white/10 shadow-3xl',
+                                    title: 'text-2xl font-bold text-white',
+                                    confirmButton: 'btn btn-primary px-8 rounded-xl'
+                                },
+                                buttonsStyling: false
+                            });
+                        @endif
+
+                        @if (session('success_message'))
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Welcome!',
+                                text: "{{ session('success_message') }}",
+                                confirmButtonColor: '#355872',
+                                border: 'none',
+                                customClass: {
+                                    popup: 'rounded-[1.5rem] bg-slate-900 text-white border border-white/10 shadow-3xl',
+                                    title: 'text-2xl font-bold text-white',
+                                    confirmButton: 'btn btn-primary px-8 rounded-xl'
+                                },
+                                buttonsStyling: false
                             });
                         @endif
 
@@ -199,54 +218,59 @@
             </div>
 
                 <!-- Profile Modal -->
-                <div class="modal" :class="{ 'modal-open': showProfileModal }" style="background-color: rgba(0,0,0,0.5); z-index: 1000;">
-                    <div class="modal-box max-w-4xl rounded-[2.5rem] p-0 border border-white/10 shadow-3xl overflow-hidden bg-base-100">
-                        <div class="bg-base-200 p-8 border-b border-base-300 flex justify-between items-center bg-slate-900 text-white">
+                <div class="modal backdrop-blur-md" :class="{ 'modal-open': showProfileModal }" style="background-color: rgba(0,0,0,0.5); z-index: 1000;">
+                    <div class="modal-box max-w-3xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-3xl overflow-hidden flex flex-col relative">
+                        {{-- Decorative background glow --}}
+                        <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+                        {{-- Header --}}
+                        <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
                             <div>
-                                <h3 class="text-3xl font-bold tracking-tight">Account Settings</h3>
-                                <p class="text-sm opacity-60 font-medium mt-1">Manage your professional profile and security</p>
+                                <h3 class="text-2xl font-black tracking-tight text-white">Account Settings</h3>
+                                <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Manage your professional profile and security</p>
                             </div>
-                            <button @click="showProfileModal = false" class="btn btn-sm btn-circle btn-ghost text-white hover:bg-white/10">✕</button>
+                            <button @click="showProfileModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                         </div>
-                        
-                        <div class="p-8 space-y-12 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                            <!-- Profile Info -->
-                            <section class="space-y-6">
+
+                        {{-- Scrollable Body --}}
+                        <div class="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar flex-grow relative z-10">
+                            {{-- Profile Info --}}
+                            <section class="space-y-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">01</div>
-                                    <h4 class="font-bold opacity-80 uppercase tracking-widest text-xs">Profile Information</h4>
+                                    <div class="w-9 h-9 rounded-xl bg-primary/20 text-primary flex items-center justify-center font-black text-xs border border-primary/30">01</div>
+                                    <h4 class="font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Profile Information</h4>
                                 </div>
-                                <div class="bg-base-200/50 p-6 rounded-3xl border border-base-300">
+                                <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
                                     <div class="max-w-xl">
                                         @include('profile.partials.update-profile-information-form')
                                     </div>
                                 </div>
                             </section>
 
-                            <div class="divider opacity-10"></div>
+                            <div class="border-t border-white/10"></div>
 
-                            <!-- Password -->
-                            <section class="space-y-6">
+                            {{-- Password --}}
+                            <section class="space-y-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">02</div>
-                                    <h4 class="font-bold opacity-80 uppercase tracking-widest text-xs">Security & Password</h4>
+                                    <div class="w-9 h-9 rounded-xl bg-primary/20 text-primary flex items-center justify-center font-black text-xs border border-primary/30">02</div>
+                                    <h4 class="font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Security &amp; Password</h4>
                                 </div>
-                                <div class="bg-base-200/50 p-6 rounded-3xl border border-base-300">
+                                <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
                                     <div class="max-w-xl">
                                         @include('profile.partials.update-password-form')
                                     </div>
                                 </div>
                             </section>
 
-                            <div class="divider opacity-10"></div>
+                            <div class="border-t border-white/10"></div>
 
-                            <!-- Delete -->
-                            <section class="space-y-6">
+                            {{-- Danger Zone --}}
+                            <section class="space-y-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-error/10 text-error flex items-center justify-center font-bold">03</div>
-                                    <h4 class="font-bold opacity-80 uppercase tracking-widest text-xs text-error">Danger Zone</h4>
+                                    <div class="w-9 h-9 rounded-xl bg-error/20 text-error flex items-center justify-center font-black text-xs border border-error/30">03</div>
+                                    <h4 class="font-black text-[10px] uppercase tracking-[0.2em] text-error/70">Danger Zone</h4>
                                 </div>
-                                <div class="bg-error/5 p-6 rounded-3xl border border-error/10">
+                                <div class="bg-error/5 p-6 rounded-3xl border border-error/20">
                                     <div class="max-w-xl">
                                         @include('profile.partials.delete-user-form')
                                     </div>
@@ -254,8 +278,9 @@
                             </section>
                         </div>
 
-                        <div class="p-6 bg-base-200/50 border-t border-base-300 flex justify-end">
-                            <button @click="showProfileModal = false" class="btn btn-ghost rounded-xl px-10">Close Settings</button>
+                        {{-- Footer --}}
+                        <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
+                            <button @click="showProfileModal = false" class="btn btn-ghost rounded-xl px-10 text-white/40 hover:text-white hover:bg-white/5 transition-all">Close Settings</button>
                         </div>
                     </div>
                 </div>

@@ -88,3 +88,22 @@
     </form>
 
 </x-guest-layout>
+
+@if ($errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Authentication Failed',
+                text: '{{ $errors->first() }}',
+                customClass: {
+                    popup: 'rounded-[2.5rem] bg-slate-900 text-white border border-white/10 shadow-3xl',
+                    title: 'text-2xl font-bold text-white',
+                    confirmButton: 'btn btn-primary px-8 rounded-xl'
+                },
+                buttonsStyling: false
+            });
+        });
+    </script>
+@endif
+

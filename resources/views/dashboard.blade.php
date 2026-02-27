@@ -51,9 +51,9 @@
         </div>
 
         <!-- Layout Grid -->
-        <div class="grid gap-8 dashboard-grid-logic dashboard-padding">
-            <!-- Left Side: Overdue & Transactions -->
-            <div class="lg:col-span-2 space-y-8">
+        <div class="space-y-8 dashboard-padding">
+            <!-- Main Content: Overdue & Transactions -->
+            <div class="space-y-8">
                 <!-- Overdue Alert Section -->
                 @if($overdueTransactions->count() > 0)
                 <div class="glass glass-card overflow-hidden border-error/30 shadow-2xl">
@@ -64,7 +64,7 @@
                             </div>
                             <h3 class="text-xl font-bold text-white tracking-tight">Overdue Alerts</h3>
                         </div>
-                        <a href="{{ route('borrow-transactions.overdue') }}" class="btn btn-error btn-sm rounded-xl font-bold">Process Returns</a>
+                        <a href="{{ route('borrow-transactions.index', ['filter' => 'overdue']) }}" class="btn btn-error btn-sm rounded-xl font-bold">Process Returns</a>
                     </div>
                     <div class="p-8 space-y-4">
                         @foreach($overdueTransactions as $ot)
@@ -88,8 +88,8 @@
                         @endforeach
                         @if($overdueTransactions->count() >= 3)
                         <div class="text-center pt-2">
-                            <a href="{{ route('borrow-transactions.overdue') }}" class="text-xs font-bold text-error uppercase tracking-widest hover:underline">+ See all overdue items</a>
-                        </div>
+                             <a href="{{ route('borrow-transactions.index', ['filter' => 'overdue']) }}" class="text-xs font-bold text-error uppercase tracking-widest hover:underline">+ See all overdue items</a>
+                         </div>
                         @endif
                     </div>
                 </div>
@@ -156,36 +156,6 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-
-            <!-- Right Side: Quick Actions & Help -->
-            <div class="space-y-8">
-                <!-- Quick Actions -->
-                <div class="glass-card p-8 bg-primary text-primary-content relative overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
-                    <h3 class="text-xl font-bold mb-6">Management</h3>
-                    <div class="space-y-3 relative z-10">
-                        <a href="{{ route('books.create') }}" class="btn btn-block bg-white/20 border-white/10 hover:bg-white text-primary border-none rounded-xl justify-start gap-3">
-                            <span class="text-xl">➕</span> Add New Book
-                        </a>
-                        <a href="{{ route('borrow-transactions.create') }}" class="btn btn-block bg-white/20 border-white/10 hover:bg-white text-primary border-none rounded-xl justify-start gap-3">
-                            <span class="text-xl">📅</span> Log Book Loan
-                        </a>
-                        <a href="{{ route('students.create') }}" class="btn btn-block bg-white/20 border-white/10 hover:bg-white text-primary border-none rounded-xl justify-start gap-3">
-                            <span class="text-xl">👤</span> Register Student
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Support Card -->
-                <div class="glass-card p-8 border-dashed border-2 border-base-300 bg-transparent flex flex-col items-center text-center space-y-4">
-                    <div class="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center text-2xl">💡</div>
-                    <div class="space-y-1">
-                        <h4 class="font-bold">Need Help?</h4>
-                        <p class="text-sm opacity-60 px-4">Check out our documentation for advanced library management tips.</p>
-                    </div>
-                    <button class="btn btn-outline btn-sm rounded-full">Documentation</button>
                 </div>
             </div>
         </div>

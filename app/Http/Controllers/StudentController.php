@@ -82,6 +82,7 @@ class StudentController extends Controller
             'email'   => 'required|email|unique:students',
             'phone'   => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'profile_image' => 'nullable|string',
         ]);
 
         $student = Student::create($validated);
@@ -122,6 +123,7 @@ class StudentController extends Controller
             'email'   => 'required|email|unique:students,email,' . $student->id,
             'phone'   => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'profile_image' => 'nullable|string',
         ]);
 
         $student->update($validated);

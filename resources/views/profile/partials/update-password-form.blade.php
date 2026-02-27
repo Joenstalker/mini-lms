@@ -1,6 +1,48 @@
 <section>
 
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6"
+        x-data="{
+            loading: false,
+            async submitForm(event) {
+                this.loading = true;
+                const formData = new FormData(event.target);
+                try {
+                    const response = await fetch('{{ route('password.update') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        event.target.reset();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Password Updated',
+                            text: 'Your password has been successfully changed.',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    } else {
+                        const data = await response.json();
+                        // For validation errors, the structure might be different
+                        const errorMessage = data.errors ? Object.values(data.errors).flat().join('<br>') : (data.message || 'Something went wrong.');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            html: errorMessage
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                } finally {
+                    this.loading = false;
+                }
+            }
+        }" @submit.prevent="submitForm($event)">
         @csrf
         @method('put')
 
@@ -23,17 +65,10 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
-
-            @if (session('status') === 'password-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600 dark:text-gray-400"
-                >{{ __('Saved.') }}</p>
-            @endif
+            <x-primary-button x-bind:disabled="loading">
+                <span x-show="!loading">{{ __('Save') }}</span>
+                <span x-show="loading" class="loading loading-spinner loading-sm"></span>
+            </x-primary-button>
         </div>
     </form>
 </section>

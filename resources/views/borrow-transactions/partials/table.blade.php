@@ -14,7 +14,20 @@
         <tbody>
             @forelse ($transactions as $transaction)
                 <tr class="hover:bg-white/10 transition-colors glass-card">
-                    <td class="font-bold text-white">{{ $transaction->student->name }}</td>
+                    <td class="font-bold text-white">
+                        <div class="flex items-center gap-3">
+                            <div class="avatar shadow-sm border border-white/10 rounded-full overflow-hidden w-8 h-8">
+                                @if($transaction->student->profile_image)
+                                    <img src="{{ $transaction->student->profile_image }}" class="w-full h-full object-cover">
+                                @else
+                                    <div class="bg-primary text-primary-content w-full h-full flex items-center justify-center font-bold text-xs">
+                                        {{ substr($transaction->student->name, 0, 1) }}
+                                    </div>
+                                @endif
+                            </div>
+                            <span>{{ $transaction->student->name }}</span>
+                        </div>
+                    </td>
                     <td class="text-white/80 font-medium">{{ $transaction->book->title }}</td>
                     <td>{{ $transaction->borrow_date->format('M d, Y') }}</td>
                     <td class="{{ $transaction->due_date < now() && $transaction->status !== 'returned' ? 'text-error font-bold' : '' }}">

@@ -81,9 +81,9 @@
             <p class="text-[11px] font-black text-primary uppercase tracking-tight">Active Transaction</p>
             <p class="text-[9px] font-bold opacity-60">Complete return to avoid fines.</p>
         </div>
-        <a href="{{ route('borrow-transactions.edit', $borrowTransaction) }}" class="btn btn-primary btn-sm rounded-xl px-4 font-bold">
+        <button @click="fetchReturnForm('{{ route('borrow-transactions.edit', $borrowTransaction) }}')" class="btn btn-primary btn-sm rounded-xl px-4 font-bold">
             Return
-        </a>
+        </button>
     </div>
     @else
     <div class="flex items-center gap-3 bg-success/10 p-3 rounded-2xl border border-success/20">

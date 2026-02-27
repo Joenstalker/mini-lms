@@ -34,7 +34,7 @@ class BorrowTransactionController extends Controller
             'returned'           => $query->where('status', 'returned'),
             'partially_returned' => $query->where('status', 'partially_returned'),
             'overdue'            => $query->whereIn('status', ['borrowed', 'partially_returned'])
-                                          ->where('due_date', '<', now()),
+                                          ->where('due_date', '<', now()->startOfDay()),
             default              => null,
         };
 
@@ -123,14 +123,21 @@ class BorrowTransactionController extends Controller
     /**
      * Show the return form for a transaction.
      */
-    public function edit(BorrowTransaction $borrowTransaction)
+    public function edit(BorrowTransaction $borrowTransaction, Request $request)
     {
         $borrowTransaction->load(['student', 'book']);
 
         if ($borrowTransaction->status === 'returned') {
+            if ($request->ajax()) {
+                return '<div class="alert alert-info">Already returned.</div>';
+            }
             return redirect()
                 ->route('borrow-transactions.show', $borrowTransaction)
                 ->with('info', 'All books for this transaction have already been returned.');
+        }
+
+        if ($request->ajax()) {
+            return view('borrow-transactions.partials.return_form', compact('borrowTransaction'))->render();
         }
 
         return view('borrow-transactions.return', compact('borrowTransaction'));
@@ -213,11 +220,12 @@ class BorrowTransactionController extends Controller
      */
     private function computeFine(BorrowTransaction $transaction): float
     {
-        if (Carbon::now()->lessThanOrEqualTo($transaction->due_date)) {
+        // Overdue status starts the day AFTER the due date.
+        if (Carbon::now()->startOfDay()->lessThanOrEqualTo($transaction->due_date->startOfDay())) {
             return 0;
         }
 
-        $overdueDays       = (int) Carbon::now()->diffInDays($transaction->due_date);
+        $overdueDays       = (int) Carbon::now()->startOfDay()->diffInDays($transaction->due_date->startOfDay());
         $remainingQuantity = $transaction->quantity_borrowed - $transaction->quantity_returned;
 
         return $overdueDays * 10 * max($remainingQuantity, 0);

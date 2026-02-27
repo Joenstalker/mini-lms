@@ -20,7 +20,7 @@
         ],
         [
             'name' => 'Students',
-            'route' => 'students.index',
+            'route' => 'students.index', 
             'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
             'purpose' => 'Manage borrower profiles'
         ],
@@ -36,7 +36,7 @@
 <div class="flex flex-col h-full glass w-full overflow-hidden border-r border-white/10 text-white">
     <!-- Brand -->
     <div class="p-6">
-        <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-3 no-underline group justify-start">
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 no-underline group justify-start">
             <div class="w-10 h-10 bg-primary rounded-xl flex-shrink-0 flex items-center justify-center text-primary-content group-hover:bg-primary/90 transition-all duration-300">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>
@@ -60,7 +60,7 @@
                     $isActive = request()->routeIs($item['route'] . '*') || (isset($item['pattern']) && request()->is($item['pattern']));
                 @endphp
                 <li>
-                    <a href="{{ route($item['route']) }}" wire:navigate
+                    <a href="{{ route($item['route']) }}"
                        class="flex items-center py-3 px-4 justify-start gap-4 rounded-xl transition-all duration-300 group">
                         <div @class([
                             'transition-transform duration-300 group-hover:scale-110 flex-shrink-0 flex items-center justify-center',
@@ -91,25 +91,20 @@
     <!-- User Section -->
     <div class="p-4 mt-auto transition-all duration-300 px-4">
         <div class="glass rounded-2xl border transition-all duration-300 overflow-hidden p-2 border-white/10">
-            <div class="flex items-center gap-3 p-2 justify-start">
+            <button @click="showProfileModal = true" class="flex items-center gap-3 p-2 justify-start w-full hover:bg-white/10 rounded-xl transition-all duration-300 group cursor-pointer">
                 <div class="avatar placeholder flex-shrink-0">
                     <div class="bg-primary text-primary-content font-bold transition-all duration-300 rounded-full w-10 h-10">
                         {{ substr(Auth::user()->name, 0, 1) }}
                     </div>
                 </div>
-                <div class="flex flex-col min-w-0 transition-all duration-300">
+                <div class="flex flex-col min-w-0 transition-all duration-300 text-left flex-grow">
                     <span class="text-sm font-bold truncate text-white">{{ Auth::user()->name }}</span>
                     <span class="text-[10px] text-white/50 truncate">{{ Auth::user()->email }}</span>
                 </div>
-                <div class="dropdown dropdown-top dropdown-end ml-auto">
-                    <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-xs opacity-50 hover:opacity-100">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
-                    </div>
-                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-2xl bg-base-100 rounded-2xl w-52 mb-2 border border-base-200">
-                        <li><button @click="showProfileModal = true" class="py-2 px-4 rounded-xl group hover:bg-primary/10 w-full text-left flex items-center gap-2"><svg class="w-4 h-4 opacity-70 group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> My Profile</button></li>
-                    </ul>
-                </div>
-            </div>
+                <svg class="w-4 h-4 text-white/30 group-hover:text-white/70 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+            </button>
 
             <!-- Visible Logout Button -->
             <div class="px-2 pb-2 mt-1">

@@ -1,6 +1,5 @@
 <x-app-layout>
-    <div class="space-y-0" x-data="bookCatalog()">
-
+    <div class="space-y-0" x-data="bookCatalog">
         @guest
         {{-- ===== STUDENT HERO SECTION ===== --}}
         <div class="relative overflow-hidden rounded-3xl mb-8" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 75%, #533483 100%);">
@@ -356,454 +355,466 @@
         </div>{{-- end #books-table-content --}}
 
 
-        <!-- Create Modal -->
-        <div class="modal backdrop-blur-md" :class="{ 'modal-open': showCreateModal }" style="background-color: rgba(0,0,0,0.4)">
-            <div class="modal-box max-w-3xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
-                {{-- Decorative background glow --}}
-                <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 blur-[100px] rounded-full"></div>
-                
-                {{-- Fixed Header --}}
-                <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
-                    <div>
-                        <h3 class="text-2xl font-black tracking-tight">Add New Book</h3>
-                        <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">New Catalog Entry</p>
-                    </div>
-                    <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
-                </div>
-
-                <form @submit.prevent="submitCreate()" class="flex flex-col flex-grow overflow-hidden" x-data="{ loading: false }">
-                    @csrf
+        <template x-teleport="body">
+            <!-- Create Modal -->
+            <div class="modal backdrop-blur-md" :class="{ 'modal-open': showCreateModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
+                <div class="modal-box max-w-3xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
+                    {{-- Decorative background glow --}}
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 blur-[100px] rounded-full"></div>
                     
-                    {{-- Scrollable Content Body --}}
-                    <div class="flex-grow overflow-y-auto p-8 pt-6 space-y-6 scrollbar-thin">
-                    
-                    <!-- Full Width Title -->
-                    <div class="form-control relative z-10">
-                        <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Title</span></label>
-                        <input type="text" name="title" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-2xl h-16 text-xl font-bold text-white transition-all placeholder:text-white/20" required placeholder="Enter the grand title...">
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
-                        <!-- Left Side: Image Upload & Preview -->
-                        <div class="md:col-span-2 group">
-                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Cover Image</span></label>
-                            <div class="relative w-full aspect-[3/4] rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center overflow-hidden hover:border-primary/50 hover:bg-white/5 transition-all duration-500 bg-white/5 shadow-inner group">
-                                <template x-if="!createImagePreview">
-                                    <div class="text-center p-6 space-y-4">
-                                        <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-500">
-                                            <svg class="w-10 h-10 text-white/20 group-hover:text-primary/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                        </div>
-                                        <p class="text-[10px] text-white/30 font-black uppercase tracking-[0.2em]">Select Cover</p>
-                                    </div>
-                                </template>
-                                <template x-if="createImagePreview">
-                                    <div class="relative w-full h-full group/preview">
-                                        <img :src="createImagePreview" class="w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                                            <button type="button" @click="createImagePreview = ''; $refs.createFileInput.value = ''" class="btn btn-error btn-sm rounded-xl font-bold px-6">Remove</button>
-                                        </div>
-                                    </div>
-                                </template>
-                                <input type="file" x-ref="createFileInput" @change="handleImageUpload($event, 'create')" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
-                            </div>
-                            <input type="hidden" name="cover_image" :value="createImagePreview">
-                        </div>
-
-                        <!-- Right Side: Grid of Info -->
-                        <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                            <div class="form-control sm:col-span-2">
-                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Publisher</span></label>
-                                <input type="text" name="publisher" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white placeholder:text-white/20" placeholder="e.g. Penguin Books">
-                            </div>
-
-                            <div class="form-control">
-                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Published Year</span></label>
-                                <input type="number" name="published_year" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white" placeholder="{{ date('Y') }}">
-                            </div>
-                            
-                            <div class="form-control">
-                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Total Quantity</span></label>
-                                <input type="number" name="total_quantity" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white font-bold" required min="1" value="1">
-                            </div>
-
-                            <div class="form-control sm:col-span-2" x-data="{ open: false, selectedAuthors: [] }">
-                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Authors Information</span></label>
-                                <div class="relative">
-                                    <button type="button" @click="open = !open" class="input input-bordered w-full flex items-center justify-between bg-white/5 border-white/10 rounded-xl text-sm px-4 h-12 hover:bg-white/10 transition-colors">
-                                        <span x-text="selectedAuthors.length ? selectedAuthors.length + ' authors selected' : 'Assign authors...'" class="font-medium text-white/80"></span>
-                                        <svg class="w-4 h-4 text-white/40 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-                                    </button>
-                                    <div x-show="open" @click.away="open = false" 
-                                         x-transition:enter="transition ease-out duration-200"
-                                         x-transition:enter-start="opacity-0 translate-y-2"
-                                         x-transition:enter-end="opacity-100 translate-y-0"
-                                         class="absolute z-[60] w-full mt-2 glass-card rounded-2xl shadow-2xl max-h-60 overflow-y-auto p-2 scrollbar-thin border border-white/10">
-                                        @foreach (\App\Models\Author::all() as $author)
-                                            <label class="flex items-center gap-3 p-3 hover:bg-white/10 rounded-xl cursor-pointer transition-colors group">
-                                                <input type="checkbox" name="authors[]" value="{{ $author->id }}" x-model="selectedAuthors" class="checkbox checkbox-primary checkbox-sm border-white/20 rounded-md">
-                                                <span class="text-sm font-semibold text-white/70 group-hover:text-white transition-colors">{{ $author->name }}</span>
-                                            </label>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Description - Widened -->
-                    <div class="form-control relative z-10">
-                        <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Description & Summary</span></label>
-                        <textarea name="description" class="textarea bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-2xl h-40 leading-relaxed text-sm py-4 text-white placeholder:text-white/20 transition-all" placeholder="Tell us more about this masterpiece..."></textarea>
-                    </div>
-
-                    </div> {{-- End Scrollable Content Body --}}
-
-                    {{-- Fixed Action Footer --}}
-                    <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
-                        <button type="button" @click="showCreateModal = false" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all" :disabled="loading">Discard</button>
-                        <button type="submit" class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:scale-105 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-primary/20 transition-all duration-300" :class="{ 'loading': loading }" :disabled="loading">
-                            <span x-show="!loading" class="flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/></svg>
-                                Create Book Entry
-                            </span>
-                            <span x-show="loading" class="flex items-center gap-2">
-                                <span class="loading loading-spinner loading-xs"></span>
-                                Creating...
-                            </span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Edit Modal -->
-        <div class="modal backdrop-blur-md" :class="{ 'modal-open': showEditModal }" style="background-color: rgba(0,0,0,0.4)">
-            <div class="modal-box max-w-3xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
-                {{-- Decorative background glow --}}
-                <div class="absolute -top-24 -right-24 w-48 h-48 bg-warning/10 blur-[100px] rounded-full"></div>
-                
-                {{-- Fixed Header --}}
-                <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
-                    <div>
-                        <h3 class="text-2xl font-black tracking-tight">Edit Book</h3>
-                        <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Update Catalog Item</p>
-                    </div>
-                    <button @click="showEditModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
-                </div>
-
-                <form @submit.prevent="submitEdit()" class="flex flex-col flex-grow overflow-hidden" x-data="{ loading: false }">
-                    @csrf
-                    @method('PATCH')
-                    
-                    {{-- Scrollable Content Body --}}
-                    <div class="flex-grow overflow-y-auto p-8 pt-6 space-y-6 scrollbar-thin">
-                    
-                    <!-- Full Width Title -->
-                    <div class="form-control relative z-10">
-                        <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Title</span></label>
-                        <input type="text" name="title" x-model="editData.title" class="input w-full bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-2xl h-16 text-xl font-bold text-white transition-all placeholder:text-white/20" required placeholder="Enter the grand title...">
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
-                        <!-- Left Side: Image Upload & Preview -->
-                        <div class="md:col-span-2 group">
-                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Cover Image</span></label>
-                            <div class="relative w-full aspect-[3/4] rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center overflow-hidden hover:border-warning/50 hover:bg-white/5 transition-all duration-500 bg-white/5 shadow-inner group">
-                                <template x-if="!editData.cover_image">
-                                    <div class="text-center p-6 space-y-4">
-                                        <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto group-hover:scale-110 group-hover:bg-warning/10 transition-all duration-500">
-                                            <svg class="w-10 h-10 text-white/20 group-hover:text-warning/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                        </div>
-                                        <p class="text-[10px] text-white/30 font-black uppercase tracking-[0.2em]">Select Cover</p>
-                                    </div>
-                                </template>
-                                <template x-if="editData.cover_image">
-                                    <div class="relative w-full h-full group/preview">
-                                        <img :src="editData.cover_image" class="w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                                            <button type="button" @click="editData.cover_image = ''; $refs.editFileInput.value = ''" class="btn btn-error btn-sm rounded-xl font-bold px-6">Remove</button>
-                                        </div>
-                                    </div>
-                                </template>
-                                <input type="file" x-ref="editFileInput" @change="handleImageUpload($event, 'edit')" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
-                            </div>
-                            <input type="hidden" name="cover_image" :value="editData.cover_image">
-                        </div>
-
-                        <!-- Right Side: Grid of Info -->
-                        <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                            <div class="form-control sm:col-span-2">
-                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Publisher</span></label>
-                                <input type="text" name="publisher" x-model="editData.publisher" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white placeholder:text-white/20">
-                            </div>
-
-                            <div class="form-control">
-                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Published Year</span></label>
-                                <input type="number" name="published_year" x-model="editData.published_year" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white">
-                            </div>
-                            
-                            <div class="form-control">
-                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Total Quantity</span></label>
-                                <input type="number" name="total_quantity" x-model="editData.total_quantity" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white font-bold" required min="1">
-                            </div>
-
-                            <div class="form-control sm:col-span-2" x-data="{ open: false }">
-                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Authors Information</span></label>
-                                <div class="relative">
-                                    <button type="button" @click="open = !open" class="input input-bordered w-full flex items-center justify-between bg-white/5 border-white/10 rounded-xl text-sm px-4 h-12 hover:bg-white/10 transition-colors">
-                                        <span x-text="editData.authors.length ? editData.authors.length + ' authors selected' : 'Assign authors...'" class="font-medium text-white/80"></span>
-                                        <svg class="w-4 h-4 text-white/40 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-                                    </button>
-                                    <div x-show="open" @click.away="open = false" 
-                                         x-transition:enter="transition ease-out duration-200"
-                                         x-transition:enter-start="opacity-0 translate-y-2"
-                                         x-transition:enter-end="opacity-100 translate-y-0"
-                                         class="absolute z-[60] w-full mt-2 glass-card rounded-2xl shadow-2xl max-h-60 overflow-y-auto p-2 scrollbar-thin border border-white/10">
-                                        @foreach (\App\Models\Author::all() as $author)
-                                            <label class="flex items-center gap-3 p-3 hover:bg-white/10 rounded-xl cursor-pointer transition-colors group">
-                                                <input type="checkbox" name="authors[]" value="{{ $author->id }}" x-model="editData.authors" class="checkbox checkbox-warning checkbox-sm border-white/20 rounded-md">
-                                                <span class="text-sm font-semibold text-white/70 group-hover:text-white transition-colors">{{ $author->name }}</span>
-                                            </label>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Description - Widened -->
-                    <div class="form-control relative z-10">
-                        <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Description & Summary</span></label>
-                        <textarea name="description" x-model="editData.description" class="textarea bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-2xl h-40 leading-relaxed text-sm py-4 text-white placeholder:text-white/20 transition-all" placeholder="Update the story..."></textarea>
-                    </div>
-
-                    </div> {{-- End Scrollable Content Body --}}
-
-                    {{-- Fixed Action Footer --}}
-                    <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
-                        <button type="button" @click="showEditModal = false" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all" :disabled="loading">Discard</button>
-                        <button type="submit" class="btn border-none bg-gradient-to-r from-warning to-warning-focus hover:scale-105 active:scale-95 text-warning-content font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-warning/20 transition-all duration-300" :class="{ 'loading': loading }" :disabled="loading">
-                            <span x-show="!loading" class="flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-                                Update Book Data
-                            </span>
-                            <span x-show="loading" class="flex items-center gap-2">
-                                <span class="loading loading-spinner loading-xs"></span>
-                                Updating...
-                            </span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Details Modal -->
-        <div class="modal modal-bottom sm:modal-middle backdrop-blur-md" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.4)">
-            <div class="modal-box w-full max-w-2xl glass text-white rounded-t-[2.5rem] sm:rounded-[2.5rem] p-0 border border-white/10 shadow-3xl overflow-hidden flex flex-col max-h-[90vh] relative">
-                {{-- Decorative background glow --}}
-                <div class="absolute -top-24 -right-24 w-48 h-48 bg-info/10 blur-[100px] rounded-full"></div>
-
-                <div class="bg-info/20 p-6 sm:p-8 flex justify-between items-center text-white shrink-0 backdrop-blur-md border-b border-white/10 relative z-10">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-info/20 rounded-2xl flex items-center justify-center border border-info/30">
-                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>
-                            </svg>
-                        </div>
+                    {{-- Fixed Header --}}
+                    <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
                         <div>
-                            <h3 class="text-xl sm:text-2xl font-bold tracking-tight">Book Details</h3>
-                            <p class="text-[10px] sm:text-sm opacity-80 font-medium mt-0.5 sm:mt-1">Full catalog information</p>
+                            <h3 class="text-2xl font-black tracking-tight">Add New Book</h3>
+                            <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">New Catalog Entry</p>
                         </div>
-                    </div>
-                    <button @click="showDetailsModal = false" class="btn btn-sm btn-circle btn-ghost text-white">✕</button>
-                </div>
-
-                <div class="p-6 sm:p-8 space-y-6 sm:space-y-8 overflow-y-auto custom-scrollbar flex-grow relative z-10">
-                    <div class="flex flex-col sm:flex-row gap-8">
-                        <!-- Book Cover in Details -->
-                        <div class="w-full sm:w-48 shrink-0">
-                            <div class="aspect-[3/4.2] rounded-[2rem] bg-white/5 shadow-2xl overflow-hidden border border-white/10 ring-1 ring-white/5">
-                                <img :src="showData.cover_image || '{{ asset('build/images/default-book-cover.png') }}'" class="w-full h-full object-cover">
-                            </div>
-                        </div>
-
-                        <!-- Info -->
-                        <div class="flex-grow space-y-4">
-                            <div class="space-y-2">
-                                <div class="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Title & Publisher</div>
-                                <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight" x-text="showData.title"></h2>
-                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-white/50 italic">
-                                    <span x-text="showData.publisher || 'Independent'"></span>
-                                    <span class="opacity-20 hidden sm:inline">•</span>
-                                    <span x-text="'Published ' + (showData.published_year || 'Unknown')"></span>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-white/5 p-5 rounded-[1.5rem] border border-white/10">
-                                    <div class="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">Availability</div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-3xl font-black text-primary" x-text="showData.available_quantity"></span>
-                                        <span class="text-white/20">/</span>
-                                        <span class="text-sm font-bold text-white/40" x-text="showData.total_quantity + ' total'"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                     </div>
 
-                    <div class="space-y-4">
-                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Contributing Authors</div>
-                        <div class="flex flex-wrap gap-2">
-                            <template x-for="author in showData.authors" :key="author.id">
-                                <div class="badge badge-primary badge-outline sm:badge-lg py-5 px-5 rounded-2xl border-white/10 text-white font-bold" x-text="author.name"></div>
-                            </template>
-                            <template x-if="!showData.authors || showData.authors.length === 0">
-                                <span class="text-sm opacity-50 italic">No authors listed</span>
-                            </template>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Description</div>
-                        <div class="bg-white/5 p-6 sm:p-8 rounded-[2rem] text-sm leading-relaxed text-white/80 border border-white/5" x-text="showData.description || 'No description available for this book.'"></div>
-                    </div>
-                </div>
-
-                <div class="p-8 bg-white/5 border-t border-white/10 shrink-0 relative z-10">
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <button @click="showDetailsModal = false" class="btn btn-ghost rounded-xl px-10 order-2 sm:order-1">Close</button>
-                        @guest
-                            <template x-if="showData.available_quantity > 0">
-                                <button @click="showDetailsModal = false; borrowData = { id: showData.id, title: showData.title, available: showData.available_quantity }; showBorrowModal = true" class="btn btn-success text-success-content font-bold rounded-xl px-10 shadow-lg shadow-success/20 order-1 sm:order-2 flex-grow">Borrow This Book</button>
-                            </template>
-                        @endguest
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Borrow Modal (For Students/Guests) -->
-        <div class="modal modal-bottom sm:modal-middle" :class="{ 'modal-open': showBorrowModal }" style="background-color: rgba(0,0,0,0.5)">
-            <div class="modal-box w-full max-w-xl rounded-t-[2.5rem] sm:rounded-[2.5rem] p-0 border border-white/10 shadow-3xl overflow-hidden bg-base-100 flex flex-col max-h-[90vh]">
-                <div class="bg-success p-6 sm:p-8 flex justify-between items-center text-success-content shrink-0">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl sm:text-2xl font-bold tracking-tight">Borrow Book</h3>
-                            <p class="text-[10px] sm:text-sm opacity-80 font-medium mt-0.5 sm:mt-1">Limited to available library stock</p>
-                        </div>
-                    </div>
-                    <button @click="showBorrowModal = false" class="btn btn-sm btn-circle btn-ghost text-white">✕</button>
-                </div>
-
-                <form action="{{ route('borrow-transactions.store') }}" method="POST" class="flex flex-col flex-grow overflow-hidden">
-                    @csrf
-                    <input type="hidden" name="book_id" :value="borrowData.id">
-                    <input type="hidden" name="book_title" :value="borrowData.title">
-                    <input type="hidden" name="available_count" :value="borrowData.available">
-                    <input type="hidden" name="studentSearch" :value="studentSearch">
-                    <input type="hidden" name="student_id" :value="selectedStudent ? selectedStudent.id : '{{ old('student_id') }}'">
-
-                    <div class="p-6 sm:p-8 space-y-6 overflow-y-auto custom-scrollbar flex-grow">
-                        @if($errors->any())
-                            <div class="alert alert-error rounded-2xl text-xs py-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                <span>Please check the errors below.</span>
-                            </div>
-                        @endif
-
-                        <div class="bg-base-200/50 p-4 sm:p-6 rounded-3xl border border-base-300">
-                            <div class="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">Selected Book</div>
-                            <div class="text-lg sm:text-xl font-bold text-primary" x-text="borrowData.title"></div>
-                            <div class="text-[10px] sm:text-xs mt-1 opacity-60"><span x-text="borrowData.available"></span> copies available for pickup</div>
+                    <form @submit.prevent="submitCreate()" class="flex flex-col flex-grow overflow-hidden" x-data="{ loading: false }">
+                        @csrf
+                        
+                        {{-- Scrollable Content Body --}}
+                        <div class="flex-grow overflow-y-auto p-8 pt-6 space-y-6 scrollbar-thin">
+                        
+                        <!-- Full Width Title -->
+                        <div class="form-control relative z-10">
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Title</span></label>
+                            <input type="text" name="title" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-2xl h-16 text-xl font-bold text-white transition-all placeholder:text-white/20" required placeholder="Enter the grand title...">
                         </div>
 
-                        <div class="form-control relative">
-                            <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Student Profile *</span></label>
-                            <div class="relative">
-                                <input 
-                                    type="text" 
-                                    x-model="studentSearch" 
-                                    @focus="showStudentDropdown = true"
-                                    @click.away="showStudentDropdown = false"
-                                    placeholder="Type your name to search..." 
-                                    class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl w-full pr-10 @error('student_id') border-error @enderror"
-                                    required
-                                >
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none opacity-30">
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </div>
-                                <div 
-                                    x-show="showStudentDropdown" 
-                                    class="absolute z-50 w-full mt-2 bg-base-100 border border-base-300 rounded-2xl shadow-xl max-h-48 overflow-y-auto custom-scrollbar"
-                                    style="display: none;"
-                                >
-                                    <template x-for="student in filteredStudents()" :key="student.id">
-                                        <button 
-                                            type="button" 
-                                            @click="selectStudent(student)"
-                                            class="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-sm border-b border-base-200 last:border-none"
-                                        >
-                                            <span class="font-medium" x-text="student.name"></span>
-                                        </button>
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
+                            <!-- Left Side: Image Upload & Preview -->
+                            <div class="md:col-span-2 group">
+                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Cover Image</span></label>
+                                <div class="relative w-full aspect-[3/4] rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center overflow-hidden hover:border-primary/50 hover:bg-white/5 transition-all duration-500 bg-white/5 shadow-inner group">
+                                    <template x-if="!createImagePreview">
+                                        <div class="text-center p-6 space-y-4">
+                                            <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-500">
+                                                <svg class="w-10 h-10 text-white/20 group-hover:text-primary/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <p class="text-[10px] text-white/30 font-black uppercase tracking-[0.2em]">Select Cover</p>
+                                        </div>
                                     </template>
-                                    <div x-show="filteredStudents().length === 0" class="px-4 py-3 text-sm opacity-50 italic">No matching students found</div>
+                                    <template x-if="createImagePreview">
+                                        <div class="relative w-full h-full group/preview">
+                                            <img :src="createImagePreview" class="w-full h-full object-cover">
+                                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                                                <button type="button" @click="createImagePreview = ''; $refs.createFileInput.value = ''" class="btn btn-error btn-sm rounded-xl font-bold px-6">Remove</button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <input type="file" x-ref="createFileInput" @change="handleImageUpload($event, 'create')" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
+                                </div>
+                                <input type="hidden" name="cover_image" :value="createImagePreview">
+                            </div>
+
+                            <!-- Right Side: Grid of Info -->
+                            <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                <div class="form-control sm:col-span-2">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Publisher</span></label>
+                                    <input type="text" name="publisher" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white placeholder:text-white/20" placeholder="e.g. Penguin Books">
+                                </div>
+
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Published Year</span></label>
+                                    <input type="number" name="published_year" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white" placeholder="{{ date('Y') }}">
+                                </div>
+                                
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Total Quantity</span></label>
+                                    <input type="number" name="total_quantity" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white font-bold" required min="1" value="1">
+                                </div>
+
+                                <div class="form-control sm:col-span-2" x-data="{ open: false, selectedAuthors: [] }">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Authors Information</span></label>
+                                    <div class="relative">
+                                        <button type="button" @click="open = !open" class="input input-bordered w-full flex items-center justify-between bg-white/5 border-white/10 rounded-xl text-sm px-4 h-12 hover:bg-white/10 transition-colors">
+                                            <span x-text="selectedAuthors.length ? selectedAuthors.length + ' authors selected' : 'Assign authors...'" class="font-medium text-white/80"></span>
+                                            <svg class="w-4 h-4 text-white/40 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                                        </button>
+                                        <div x-show="open" @click.away="open = false" 
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 translate-y-2"
+                                             x-transition:enter-end="opacity-100 translate-y-0"
+                                             class="absolute z-[60] w-full mt-2 glass-card rounded-2xl shadow-2xl max-h-60 overflow-y-auto p-2 scrollbar-thin border border-white/10">
+                                            @foreach (\App\Models\Author::all() as $author)
+                                                <label class="flex items-center gap-3 p-3 hover:bg-white/10 rounded-xl cursor-pointer transition-colors group">
+                                                    <input type="checkbox" name="authors[]" value="{{ $author->id }}" x-model="selectedAuthors" class="checkbox checkbox-primary checkbox-sm border-white/20 rounded-md">
+                                                    <span class="text-sm font-semibold text-white/70 group-hover:text-white transition-colors">{{ $author->name }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            @error('student_id') <span class="text-error text-[10px] mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="form-control">
-                            <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Personal PIN *</span></label>
-                            <input type="password" name="pin" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl @error('pin') border-error @enderror" required placeholder="••••" minlength="4" maxlength="6">
-                            <label class="label"><span class="label-text-alt opacity-50 text-[10px] sm:text-xs text-info">Enter your 4-6 digit security PIN</span></label>
-                            @error('pin') <span class="text-error text-[10px] mt-1">{{ $message }}</span> @enderror
+                        <!-- Description - Widened -->
+                        <div class="form-control relative z-10">
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Description & Summary</span></label>
+                            <textarea name="description" class="textarea bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-2xl h-40 leading-relaxed text-sm py-4 text-white placeholder:text-white/20 transition-all" placeholder="Tell us more about this masterpiece..."></textarea>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div class="form-control">
-                                <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Quantity *</span></label>
-                                <input type="number" name="quantity_borrowed" value="{{ old('quantity_borrowed', 1) }}" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl w-full @error('quantity_borrowed') border-error @enderror" required min="1" :max="borrowData.available">
-                                @error('quantity_borrowed') <span class="text-error text-[10px] mt-1">{{ $message }}</span> @enderror
-                            </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Return Date *</span></label>
-                                <input type="date" name="due_date" value="{{ old('due_date', now()->addDays(7)->format('Y-m-d')) }}" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl w-full @error('due_date') border-error @enderror" required min="{{ now()->addDays(1)->format('Y-m-d') }}">
-                                @error('due_date') <span class="text-error text-[10px] mt-1">{{ $message }}</span> @enderror
-                            </div>
-                        </div>
+                        </div> {{-- End Scrollable Content Body --}}
 
-                        <div class="alert alert-info rounded-2xl text-[10px] sm:text-xs bg-primary/5 border-primary/10 text-primary-content/80">
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span>Policy: ₱10.00 fine per day per book if returned after the due date.</span>
+                        {{-- Fixed Action Footer --}}
+                        <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
+                            <button type="button" @click="showCreateModal = false" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all" :disabled="loading">Discard</button>
+                            <button type="submit" class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:scale-105 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-primary/20 transition-all duration-300" :class="{ 'loading': loading }" :disabled="loading">
+                                <span x-show="!loading" class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/></svg>
+                                    Create Book Entry
+                                </span>
+                                <span x-show="loading" class="flex items-center gap-2">
+                                    <span class="loading loading-spinner loading-xs"></span>
+                                    Creating...
+                                </span>
+                            </button>
                         </div>
-                    </div>
-
-                    <div class="p-6 sm:p-8 bg-base-200/50 border-t border-base-300 shrink-0">
-                        <div class="flex flex-col sm:flex-row gap-3">
-                            <button type="button" @click="showBorrowModal = false" class="btn btn-ghost rounded-xl order-2 sm:order-1">Cancel</button>
-                            <button type="submit" class="btn btn-success text-success-content font-bold rounded-xl px-10 shadow-lg shadow-success/20 order-1 sm:order-2 flex-grow">Record Borrow</button>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
-        </div>
+        </template>
+
+        <template x-teleport="body">
+            <!-- Edit Modal -->
+            <div class="modal backdrop-blur-md" :class="{ 'modal-open': showEditModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
+                <div class="modal-box max-w-3xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
+                    {{-- Decorative background glow --}}
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-warning/10 blur-[100px] rounded-full"></div>
+                    
+                    {{-- Fixed Header --}}
+                    <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
+                        <div>
+                            <h3 class="text-2xl font-black tracking-tight">Edit Book</h3>
+                            <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Update Catalog Item</p>
+                        </div>
+                        <button @click="showEditModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
+                    </div>
+
+                    <form @submit.prevent="submitEdit()" class="flex flex-col flex-grow overflow-hidden" x-data="{ loading: false }">
+                        @csrf
+                        @method('PATCH')
+                        
+                        {{-- Scrollable Content Body --}}
+                        <div class="flex-grow overflow-y-auto p-8 pt-6 space-y-6 scrollbar-thin">
+                        
+                        <!-- Full Width Title -->
+                        <div class="form-control relative z-10">
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Title</span></label>
+                            <input type="text" name="title" x-model="editData.title" class="input w-full bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-2xl h-16 text-xl font-bold text-white transition-all placeholder:text-white/20" required placeholder="Enter the grand title...">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
+                            <!-- Left Side: Image Upload & Preview -->
+                            <div class="md:col-span-2 group">
+                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Cover Image</span></label>
+                                <div class="relative w-full aspect-[3/4] rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center overflow-hidden hover:border-warning/50 hover:bg-white/5 transition-all duration-500 bg-white/5 shadow-inner group">
+                                    <template x-if="!editData.cover_image">
+                                        <div class="text-center p-6 space-y-4">
+                                            <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto group-hover:scale-110 group-hover:bg-warning/10 transition-all duration-500">
+                                                <svg class="w-10 h-10 text-white/20 group-hover:text-warning/50 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <p class="text-[10px] text-white/30 font-black uppercase tracking-[0.2em]">Select Cover</p>
+                                        </div>
+                                    </template>
+                                    <template x-if="editData.cover_image">
+                                        <div class="relative w-full h-full group/preview">
+                                            <img :src="editData.cover_image" class="w-full h-full object-cover">
+                                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                                                <button type="button" @click="editData.cover_image = ''; $refs.editFileInput.value = ''" class="btn btn-error btn-sm rounded-xl font-bold px-6">Remove</button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <input type="file" x-ref="editFileInput" @change="handleImageUpload($event, 'edit')" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
+                                </div>
+                                <input type="hidden" name="cover_image" :value="editData.cover_image">
+                            </div>
+
+                            <!-- Right Side: Grid of Info -->
+                            <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                <div class="form-control sm:col-span-2">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Publisher</span></label>
+                                    <input type="text" name="publisher" x-model="editData.publisher" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white placeholder:text-white/20">
+                                </div>
+
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Published Year</span></label>
+                                    <input type="number" name="published_year" x-model="editData.published_year" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white">
+                                </div>
+                                
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Total Quantity</span></label>
+                                    <input type="number" name="total_quantity" x-model="editData.total_quantity" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white font-bold" required min="1">
+                                </div>
+
+                                <div class="form-control sm:col-span-2" x-data="{ open: false }">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Authors Information</span></label>
+                                    <div class="relative">
+                                        <button type="button" @click="open = !open" class="input input-bordered w-full flex items-center justify-between bg-white/5 border-white/10 rounded-xl text-sm px-4 h-12 hover:bg-white/10 transition-colors">
+                                            <span x-text="editData.authors.length ? editData.authors.length + ' authors selected' : 'Assign authors...'" class="font-medium text-white/80"></span>
+                                            <svg class="w-4 h-4 text-white/40 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                                        </button>
+                                        <div x-show="open" @click.away="open = false" 
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 translate-y-2"
+                                             x-transition:enter-end="opacity-100 translate-y-0"
+                                             class="absolute z-[60] w-full mt-2 glass-card rounded-2xl shadow-2xl max-h-60 overflow-y-auto p-2 scrollbar-thin border border-white/10">
+                                            @foreach (\App\Models\Author::all() as $author)
+                                                <label class="flex items-center gap-3 p-3 hover:bg-white/10 rounded-xl cursor-pointer transition-colors group">
+                                                    <input type="checkbox" name="authors[]" value="{{ $author->id }}" x-model="editData.authors" class="checkbox checkbox-warning checkbox-sm border-white/20 rounded-md">
+                                                    <span class="text-sm font-semibold text-white/70 group-hover:text-white transition-colors">{{ $author->name }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description - Widened -->
+                        <div class="form-control relative z-10">
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Description & Summary</span></label>
+                            <textarea name="description" x-model="editData.description" class="textarea bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-2xl h-40 leading-relaxed text-sm py-4 text-white placeholder:text-white/20 transition-all" placeholder="Update the story..."></textarea>
+                        </div>
+
+                        </div> {{-- End Scrollable Content Body --}}
+
+                        {{-- Fixed Action Footer --}}
+                        <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
+                            <button type="button" @click="showEditModal = false" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all" :disabled="loading">Discard</button>
+                            <button type="submit" class="btn border-none bg-gradient-to-r from-warning to-warning-focus hover:scale-105 active:scale-95 text-warning-content font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-warning/20 transition-all duration-300" :class="{ 'loading': loading }" :disabled="loading">
+                                <span x-show="!loading" class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                                    Update Book Data
+                                </span>
+                                <span x-show="loading" class="flex items-center gap-2">
+                                    <span class="loading loading-spinner loading-xs"></span>
+                                    Updating...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+
+        <template x-teleport="body">
+            <!-- Details Modal -->
+            <div class="modal modal-bottom sm:modal-middle backdrop-blur-md" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
+                <div class="modal-box w-full max-w-2xl glass text-white rounded-t-[2.5rem] sm:rounded-[2.5rem] p-0 border border-white/10 shadow-3xl overflow-hidden flex flex-col max-h-[90vh] relative">
+                    {{-- Decorative background glow --}}
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-info/10 blur-[100px] rounded-full"></div>
+
+                    <div class="bg-info/20 p-6 sm:p-8 flex justify-between items-center text-white shrink-0 backdrop-blur-md border-b border-white/10 relative z-10">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-info/20 rounded-2xl flex items-center justify-center border border-info/30">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl sm:text-2xl font-bold tracking-tight">Book Details</h3>
+                                <p class="text-[10px] sm:text-sm opacity-80 font-medium mt-0.5 sm:mt-1">Full catalog information</p>
+                            </div>
+                        </div>
+                        <button @click="showDetailsModal = false" class="btn btn-sm btn-circle btn-ghost text-white">✕</button>
+                    </div>
+
+                    <div class="p-6 sm:p-8 space-y-6 sm:space-y-8 overflow-y-auto custom-scrollbar flex-grow relative z-10">
+                        <div class="flex flex-col sm:flex-row gap-8">
+                            <!-- Book Cover in Details -->
+                            <div class="w-full sm:w-48 shrink-0">
+                                <div class="aspect-[3/4.2] rounded-[2rem] bg-white/5 shadow-2xl overflow-hidden border border-white/10 ring-1 ring-white/5">
+                                    <img :src="showData.cover_image || '{{ asset('build/images/default-book-cover.png') }}'" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+
+                            <!-- Info -->
+                            <div class="flex-grow space-y-4">
+                                <div class="space-y-2">
+                                    <div class="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Title & Publisher</div>
+                                    <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight" x-text="showData.title"></h2>
+                                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-white/50 italic">
+                                        <span x-text="showData.publisher || 'Independent'"></span>
+                                        <span class="opacity-20 hidden sm:inline">•</span>
+                                        <span x-text="'Published ' + (showData.published_year || 'Unknown')"></span>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-white/5 p-5 rounded-[1.5rem] border border-white/10">
+                                        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">Availability</div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-3xl font-black text-primary" x-text="showData.available_quantity"></span>
+                                            <span class="text-white/20">/</span>
+                                            <span class="text-sm font-bold text-white/40" x-text="showData.total_quantity + ' total'"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Contributing Authors</div>
+                            <div class="flex flex-wrap gap-2">
+                                <template x-for="author in showData.authors" :key="author.id">
+                                    <div class="badge badge-primary badge-outline sm:badge-lg py-5 px-5 rounded-2xl border-white/10 text-white font-bold" x-text="author.name"></div>
+                                </template>
+                                <template x-if="!showData.authors || showData.authors.length === 0">
+                                    <span class="text-sm opacity-50 italic">No authors listed</span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Description</div>
+                            <div class="bg-white/5 p-6 sm:p-8 rounded-[2rem] text-sm leading-relaxed text-white/80 border border-white/5" x-text="showData.description || 'No description available for this book.'"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-8 bg-white/5 border-t border-white/10 shrink-0 relative z-10">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button @click="showDetailsModal = false" class="btn btn-ghost rounded-xl px-10 order-2 sm:order-1">Close</button>
+                            @guest
+                                <template x-if="showData.available_quantity > 0">
+                                    <button @click="showDetailsModal = false; borrowData = { id: showData.id, title: showData.title, available: showData.available_quantity }; showBorrowModal = true" class="btn btn-success text-success-content font-bold rounded-xl px-10 shadow-lg shadow-success/20 order-1 sm:order-2 flex-grow">Borrow This Book</button>
+                                </template>
+                            @endguest
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="showBorrowModal">
+            <template x-teleport="body">
+                <div class="modal backdrop-blur-md modal-open" style="background-color: rgba(0,0,0,0.4); z-index: 1000;" @click.self="showBorrowModal = false">
+                    <div class="modal-box max-w-xl max-h-[95vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col mx-4" @click.stop>
+                        {{-- Decorative background glow --}}
+                        <div class="absolute -top-24 -right-24 w-48 h-48 bg-success/10 blur-[100px] rounded-full"></div>
+                        
+                        <div class="bg-success p-6 sm:p-8 flex justify-between items-center text-success-content shrink-0">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl sm:text-2xl font-bold tracking-tight">Borrow Book</h3>
+                                    <p class="text-[10px] sm:text-sm opacity-80 font-medium mt-0.5 sm:mt-1">Limited to available library stock</p>
+                                </div>
+                            </div>
+                            <button @click="showBorrowModal = false" class="btn btn-sm btn-circle btn-ghost text-white">✕</button>
+                        </div>
+
+                        <form action="{{ route('borrow-transactions.store') }}" method="POST" class="flex flex-col flex-grow overflow-hidden">
+                            @csrf
+                            <input type="hidden" name="book_id" :value="borrowData.id">
+                            <input type="hidden" name="book_title" :value="borrowData.title">
+                            <input type="hidden" name="available_count" :value="borrowData.available">
+                            <input type="hidden" name="studentSearch" :value="studentSearch">
+                            <input type="hidden" name="student_id" :value="selectedStudent ? selectedStudent.id : '{{ old('student_id') }}'">
+
+                            <div class="p-6 sm:p-8 space-y-6 overflow-y-auto custom-scrollbar flex-grow">
+                                @if($errors->any())
+                                    <div class="alert alert-error rounded-2xl text-xs py-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        <span>Please check the errors below.</span>
+                                    </div>
+                                @endif
+
+                                <div class="bg-base-200/50 p-4 sm:p-6 rounded-3xl border border-base-300">
+                                    <div class="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">Selected Book</div>
+                                    <div class="text-lg sm:text-xl font-bold text-primary" x-text="borrowData.title"></div>
+                                    <div class="text-[10px] sm:text-xs mt-1 opacity-60"><span x-text="borrowData.available"></span> copies available for pickup</div>
+                                </div>
+
+                                <div class="form-control relative">
+                                    <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Student Profile *</span></label>
+                                    <div class="relative">
+                                        <input 
+                                            type="text" 
+                                            x-model="studentSearch" 
+                                            @focus="showStudentDropdown = true"
+                                            @click.away="showStudentDropdown = false"
+                                            placeholder="Type your name to search..." 
+                                            class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl w-full pr-10 @error('student_id') border-error @enderror"
+                                            required
+                                        >
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none opacity-30">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
+                                        <div 
+                                            x-show="showStudentDropdown" 
+                                            class="absolute z-50 w-full mt-2 bg-base-100 border border-base-300 rounded-2xl shadow-xl max-h-48 overflow-y-auto custom-scrollbar"
+                                            style="display: none;"
+                                        >
+                                            <template x-for="student in filteredStudents()" :key="student.id">
+                                                <button 
+                                                    type="button" 
+                                                    @click="selectStudent(student)"
+                                                    class="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-sm border-b border-base-200 last:border-none"
+                                                >
+                                                    <span class="font-medium" x-text="student.name"></span>
+                                                </button>
+                                            </template>
+                                            <div x-show="filteredStudents().length === 0" class="px-4 py-3 text-sm opacity-50 italic">No matching students found</div>
+                                        </div>
+                                    </div>
+                                    @error('student_id') <span class="text-error text-[10px] mt-1">{{ $message }}</span> @enderror
+                                </div>
+
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Personal PIN *</span></label>
+                                    <input type="password" name="pin" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl @error('pin') border-error @enderror" required placeholder="••••" minlength="4" maxlength="6">
+                                    <label class="label"><span class="label-text-alt opacity-50 text-[10px] sm:text-xs text-info">Enter your 4-6 digit security PIN</span></label>
+                                    @error('pin') <span class="text-error text-[10px] mt-1">{{ $message }}</span> @enderror
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Quantity *</span></label>
+                                        <input type="number" name="quantity_borrowed" value="{{ old('quantity_borrowed', 1) }}" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl w-full @error('quantity_borrowed') border-error @enderror" required min="1" :max="borrowData.available">
+                                        @error('quantity_borrowed') <span class="text-error text-[10px] mt-1">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Return Date *</span></label>
+                                        <input type="date" name="due_date" value="{{ old('due_date', now()->addDays(7)->format('Y-m-d')) }}" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl w-full @error('due_date') border-error @enderror" required min="{{ now()->addDays(1)->format('Y-m-d') }}">
+                                        @error('due_date') <span class="text-error text-[10px] mt-1">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info rounded-2xl text-[10px] sm:text-xs bg-primary/5 border-primary/10 text-primary-content/80">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span>Policy: ₱10.00 fine per day per book if returned after the due date.</span>
+                                </div>
+                            </div>
+
+                            <div class="p-6 sm:p-8 bg-base-200/50 border-t border-base-300 shrink-0">
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <button type="button" @click="showBorrowModal = false" class="btn btn-ghost rounded-xl order-2 sm:order-1">Cancel</button>
+                                    <button type="submit" class="btn btn-success text-success-content font-bold rounded-xl px-10 shadow-lg shadow-success/20 order-1 sm:order-2 flex-grow">Record Borrow</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </template>
+        </template>
 
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('bookCatalog', () => ({
                     showCreateModal: false,
                     showEditModal: false,
-                    editData: { id: '', title: '', publisher: '', published_year: '', total_quantity: '', description: '', authors: [], cover_image: '' },
+                    editData: { id: '', title: '', publisher: '', published_year: '', total_quantity: '', description: '', cover_image: '', authors: [] },
                     showBorrowModal: {{ $errors->any() && old('book_id') ? 'true' : 'false' }},
                     borrowData: { 
                         id: '{{ old('book_id') }}', 
@@ -824,8 +835,6 @@
                         const reader = new FileReader();
                         reader.onload = (e) => {
                             if (type === 'create') {
-                                // For create modal, we'll use a hidden input or handle it differently if needed
-                                // but the state belongs to the form. We'll set a preview variable.
                                 this.createImagePreview = e.target.result;
                             } else {
                                 this.editData.cover_image = e.target.result;
@@ -978,14 +987,12 @@
                             url.searchParams.delete('search');
                         }
                         
-                        // Add sort parameter
                         if (this.sort && this.sort !== 'newest') {
                             url.searchParams.set('sort', this.sort);
                         } else {
                             url.searchParams.delete('sort');
                         }
                         
-                        // Add filter parameter
                         if (this.filter && this.filter !== '') {
                             url.searchParams.set('filter', this.filter);
                         } else {
@@ -1029,7 +1036,6 @@
                     }
                 }));
             });
-
         </script>
     </div>
 </x-app-layout>

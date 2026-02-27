@@ -72,6 +72,7 @@ class AuthorController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:authors',
             'bio' => 'nullable|string',
+            'profile_image' => 'nullable|string',
         ]);
 
         $author = Author::create($validated);
@@ -104,6 +105,7 @@ class AuthorController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:authors,name,' . $author->id,
             'bio' => 'nullable|string',
+            'profile_image' => 'nullable|string',
         ]);
 
         $author->update($validated);

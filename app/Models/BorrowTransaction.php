@@ -41,14 +41,17 @@ class BorrowTransaction extends Model
 
     public function calculateFine()
     {
-        if ($this->status === 'returned' || Carbon::now()->lessThanOrEqualTo($this->due_date)) {
+        // A book is only overdue starting the day AFTER the due date.
+        // If today is the due date, it is NOT overdue.
+        if ($this->status === 'returned' || Carbon::now()->startOfDay()->lessThanOrEqualTo($this->due_date->startOfDay())) {
             return 0;
         }
 
-        $overdueDays = Carbon::now()->diffInDays($this->due_date);
+        // Overdue days = days passed since the due date (excluding the due date itself).
+        $overdueDays = Carbon::now()->startOfDay()->diffInDays($this->due_date->startOfDay());
         $remainingQuantity = $this->quantity_borrowed - $this->quantity_returned;
         
-        return $overdueDays * 10 * $remainingQuantity;
+        return $overdueDays * 10 * max($remainingQuantity, 0);
     }
 
     public function updateFine()
