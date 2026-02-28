@@ -30,12 +30,12 @@
                     </td>
                     <td class="text-white/80 font-medium">{{ $transaction->book->title }}</td>
                     <td>{{ $transaction->borrow_date->format('M d, Y') }}</td>
-                    <td class="{{ $transaction->due_date < now() && $transaction->status !== 'returned' ? 'text-error font-bold' : '' }}">
+                    <td class="{{ $transaction->is_overdue ? 'text-error font-bold' : '' }}">
                         {{ $transaction->due_date->format('M d, Y') }}
                     </td>
                     <td>
-                        @if ($transaction->fine_amount > 0)
-                            <span class="text-error font-black">₱{{ number_format($transaction->fine_amount, 2) }}</span>
+                        @if ($transaction->total_fine > 0)
+                            <span class="text-error font-black">₱{{ number_format($transaction->total_fine, 2) }}</span>
                         @else
                             <span class="text-white/30 italic">₱0.00</span>
                         @endif

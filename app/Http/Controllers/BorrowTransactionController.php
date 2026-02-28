@@ -34,7 +34,7 @@ class BorrowTransactionController extends Controller
             'returned'           => $query->where('status', 'returned'),
             'partially_returned' => $query->where('status', 'partially_returned'),
             'overdue'            => $query->whereIn('status', ['borrowed', 'partially_returned'])
-                                          ->where('due_date', '<', now()->startOfDay()),
+                                          ->where('due_date', '<', now()),
             default              => null,
         };
 
@@ -95,8 +95,8 @@ class BorrowTransactionController extends Controller
                 BorrowTransaction::create([
                     'student_id' => $validated['student_id'],
                     'book_id' => $book['id'],
-                    'borrow_date' => $validated['borrow_date'],
-                    'due_date' => $validated['due_date'],
+                    'borrow_date' => Carbon::parse($validated['borrow_date']),
+                    'due_date' => Carbon::parse($validated['due_date'])->endOfDay(),
                     'quantity_borrowed' => $qty,
                     'quantity_returned' => 0,
                     'status' => 'borrowed',
@@ -187,8 +187,16 @@ class BorrowTransactionController extends Controller
         // Load the book to update inventory
         $book = $borrowTransaction->book;
 
-        $borrowTransaction->quantity_returned += $returningQuantity;
+        // Calculate fine for the quantity being returned late
+        $fineForReturningQuantity = 0;
+        if (now()->greaterThan($borrowTransaction->due_date)) {
+            $overdueDays = (int) $borrowTransaction->due_date->diffInDays(now()->startOfDay()) + 1;
+            $fineForReturningQuantity = $overdueDays * 10 * $returningQuantity;
+        }
 
+        $borrowTransaction->quantity_returned += $returningQuantity;
+        $borrowTransaction->fine_amount += $fineForReturningQuantity;
+        
         // Determine new status
         if ($borrowTransaction->quantity_returned >= $borrowTransaction->quantity_borrowed) {
             $borrowTransaction->status      = 'returned';
@@ -196,9 +204,7 @@ class BorrowTransactionController extends Controller
         } else {
             $borrowTransaction->status = 'partially_returned';
         }
-
-        // Calculate fine based on overdue days (₱10/day × books still unreturned before this return)
-        $borrowTransaction->fine_amount = $this->computeFine($borrowTransaction);
+        
         $borrowTransaction->save();
 
         // Restore inventory
@@ -251,17 +257,10 @@ class BorrowTransactionController extends Controller
 
     /**
      * Compute fine: ₱10 × overdue days × remaining quantity.
+     * Deprecated: Use model's calculateFine() instead.
      */
     private function computeFine(BorrowTransaction $transaction): float
     {
-        // Overdue status starts the day AFTER the due date.
-        if (Carbon::now()->startOfDay()->lessThanOrEqualTo($transaction->due_date->startOfDay())) {
-            return 0;
-        }
-
-        $overdueDays       = (int) Carbon::now()->startOfDay()->diffInDays($transaction->due_date->startOfDay());
-        $remainingQuantity = $transaction->quantity_borrowed - $transaction->quantity_returned;
-
-        return $overdueDays * 10 * max($remainingQuantity, 0);
+        return $transaction->calculateFine();
     }
 }

@@ -55,6 +55,7 @@
         startCountdown(dueStr) {
             const update = () => {
                 const now = new Date().getTime();
+                // dueStr is 2026-03-01T23:59:59Z
                 const due = new Date(dueStr).getTime();
                 const diff = due - now;
                 if (diff <= 0) {

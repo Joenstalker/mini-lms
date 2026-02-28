@@ -41,22 +41,47 @@ class BorrowTransaction extends Model
 
     public function calculateFine()
     {
-        // A book is only overdue starting the day AFTER the due date.
-        // If today is the due date, it is NOT overdue.
-        if ($this->status === 'returned' || Carbon::now()->startOfDay()->lessThanOrEqualTo($this->due_date->startOfDay())) {
-            return 0;
+        // Total fine = locked fine (from previous late returns) + live fine for currently unreturned items.
+        
+        // If not yet overdue, total fine is just whatever was locked from previous partial returns.
+        if (now()->lessThanOrEqualTo($this->due_date)) {
+            return (float) $this->fine_amount;
         }
 
-        // Overdue days = days passed since the due date (excluding the due date itself).
-        $overdueDays = Carbon::now()->startOfDay()->diffInDays($this->due_date->startOfDay());
+        // If overdue, calculate live fine for remaining books.
+        // Overdue status starts exactly at the deadline (11:59:59 PM).
+        // Any time on the next day counts as 1 day overdue.
+        // Formula: diffInDays(now->startOfDay, due_date) + 1
+        $overdueDays = (int) $this->due_date->diffInDays(now()->startOfDay()) + 1;
+        
         $remainingQuantity = $this->quantity_borrowed - $this->quantity_returned;
         
-        return $overdueDays * 10 * max($remainingQuantity, 0);
+        // Live fine for remaining books
+        $liveFine = $overdueDays * 10 * max($remainingQuantity, 0);
+        
+        return (float) $this->fine_amount + $liveFine;
+    }
+
+    /**
+     * Get the current total fine including both locked and live fines.
+     */
+    public function getTotalFineAttribute()
+    {
+        return $this->calculateFine();
+    }
+
+    /**
+     * Check if the transaction is currently overdue.
+     */
+    public function getIsOverdueAttribute()
+    {
+        return $this->status !== 'returned' && now()->greaterThan($this->due_date);
     }
 
     public function updateFine()
     {
-        $this->fine_amount = $this->calculateFine();
+        // Typically fine_amount is updated during the return process.
+        // This helper can be used to manually synchronize the locked fine if needed.
         $this->save();
     }
 }

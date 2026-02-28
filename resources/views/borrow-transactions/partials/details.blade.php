@@ -1,7 +1,7 @@
 <!-- Data for Live Countdown -->
 <input type="hidden" id="details-due-date" value="{{ $borrowTransaction->due_date->toIso8601String() }}">
 <input type="hidden" id="details-status" value="{{ $borrowTransaction->status }}">
-<div id="details-active" class="hidden"></div>
+<div id="details-active" class="{{ $borrowTransaction->status !== 'returned' ? '' : 'hidden' }}"></div>
 
 <div class="space-y-8">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -47,7 +47,12 @@
                     </div>
                     <div>
                         <span class="text-[10px] font-bold text-white/30 block mb-1">Due Date</span>
-                        <span class="font-black text-sm uppercase {{ ($borrowTransaction->due_date < now() && $borrowTransaction->status !== 'returned') ? 'text-error' : 'text-white/80' }}">{{ $borrowTransaction->due_date->format('M d, Y') }}</span>
+                        <span class="font-black text-sm uppercase {{ $borrowTransaction->is_overdue ? 'text-error' : 'text-white/80' }}">
+                            {{ $borrowTransaction->due_date->format('M d, Y') }}
+                            @if($borrowTransaction->is_overdue)
+                                <span class="ml-1 text-[8px] bg-error text-white px-2 py-0.5 rounded-full">OVERDUE</span>
+                            @endif
+                        </span>
                     </div>
                 </div>
             </div>
@@ -65,10 +70,13 @@
             <span class="text-4xl font-black text-[#00df9a]">{{ $borrowTransaction->quantity_returned }}</span>
         </div>
         <div class="bg-white/5 p-6 rounded-[2rem] border border-white/10 flex flex-col items-center justify-center text-center shadow-inner">
-            <span class="text-[10px] uppercase font-black tracking-[0.3em] text-white/30 mb-2">Fine</span>
-            <span class="text-4xl font-black {{ $borrowTransaction->fine_amount > 0 ? 'text-error animate-pulse' : 'text-[#00df9a]' }}">
-                ₱{{ number_format($borrowTransaction->fine_amount, 2) }}
+            <span class="text-[10px] uppercase font-black tracking-[0.3em] text-white/30 mb-2">Fine Amount</span>
+            <span class="text-4xl font-black {{ $borrowTransaction->total_fine > 0 ? 'text-error animate-pulse' : 'text-[#00df9a]' }}">
+                ₱{{ number_format($borrowTransaction->total_fine, 2) }}
             </span>
+            @if($borrowTransaction->fine_amount > 0 && $borrowTransaction->status !== 'returned')
+                <span class="text-[9px] font-bold text-white/30 mt-1">Incl. ₱{{ number_format($borrowTransaction->fine_amount, 2) }} locked</span>
+            @endif
         </div>
     </div>
 
