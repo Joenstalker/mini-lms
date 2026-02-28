@@ -1,5 +1,79 @@
 <x-app-layout>
-    <div class="space-y-12 py-6">
+    <div class="space-y-12 py-6" x-data="{
+        showDetailsModal: false,
+        showReturnModal: false,
+        isLoadingDetails: false,
+        isLoadingReturn: false,
+        btDetailsContent: '',
+        btReturnContent: '',
+        countdown: { days: 0, hours: 0, mins: 0, secs: 0, isOverdue: false },
+        timer: null,
+
+        async fetchDetails(url) {
+            this.isLoadingDetails = true;
+            this.showDetailsModal = true;
+            this.btDetailsContent = '';
+            if (this.timer) clearInterval(this.timer);
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                this.btDetailsContent = await response.text();
+                
+                this.$nextTick(() => {
+                    const dueDateInput = document.getElementById('details-due-date');
+                    const statusInput = document.getElementById('details-status');
+                    if (dueDateInput && statusInput && statusInput.value !== 'returned') {
+                        this.startCountdown(dueDateInput.value);
+                    } else {
+                        this.countdown.isOverdue = false;
+                    }
+                });
+            } catch (error) {
+                console.error('Fetch failed:', error);
+                this.btDetailsContent = '<div class=\'alert alert-error\'>Failed to load transaction details.</div>';
+            } finally {
+                this.isLoadingDetails = false;
+            }
+        },
+        async fetchReturnForm(url) {
+            this.isLoadingReturn = true;
+            this.showReturnModal = true;
+            this.btReturnContent = '';
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                this.btReturnContent = await response.text();
+            } catch (error) {
+                console.error('Fetch failed:', error);
+                this.btReturnContent = '<div class=\'alert alert-error\'>Failed to load return form.</div>';
+            } finally {
+                this.isLoadingReturn = false;
+            }
+        },
+        startCountdown(dueStr) {
+            const update = () => {
+                const now = new Date().getTime();
+                const due = new Date(dueStr).getTime();
+                const diff = due - now;
+                if (diff <= 0) {
+                    this.countdown = { days: 0, hours: 0, mins: 0, secs: 0, isOverdue: true };
+                    clearInterval(this.timer);
+                    return;
+                }
+                this.countdown = {
+                    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+                    hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                    mins: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+                    secs: Math.floor((diff % (1000 * 60)) / 1000),
+                    isOverdue: false
+                };
+            };
+            update();
+            this.timer = setInterval(update, 1000);
+        }
+    }">
         <!-- Header -->
         <header class="relative overflow-hidden rounded-[2.5rem] bg-slate-900 text-white p-12 md:p-16 shadow-xl border border-white/5">
             <div class="relative z-10 space-y-4">
@@ -103,7 +177,6 @@
                             </div>
                             <h3 class="text-xl font-bold text-white">Recent Transactions</h3>
                         </div>
-                        <a href="{{ route('borrow-transactions.index') }}" class="btn btn-ghost btn-sm text-primary font-bold">View History</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="table table-lg">
@@ -140,12 +213,12 @@
                                             @endif
                                         </td>
                                         <td class="text-right">
-                                            <a href="{{ route('borrow-transactions.show', $transaction) }}" class="btn btn-sm btn-ghost hover:bg-primary/20 hover:text-primary transition-all duration-300 rounded-lg group" title="View Details">
+                                            <button @click="fetchDetails('{{ route('borrow-transactions.show', $transaction) }}')" class="btn btn-sm btn-ghost hover:bg-primary/20 hover:text-primary transition-all duration-300 rounded-lg group" title="View Details">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
-                                            </a>
+                                            </button>
                                         </td>
                                     </tr>
                                 @empty
@@ -159,5 +232,137 @@
                 </div>
             </div>
         </div>
-    </div>
+    <!-- Details Modal -->
+    <template x-teleport="body">
+        <div class="modal backdrop-blur-md" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
+            <div class="modal-box max-w-5xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+                <div class="p-8 md:p-12 overflow-y-auto flex-grow custom-scrollbar">
+                    <div class="flex justify-between items-start mb-10">
+                        <div class="flex items-center gap-5">
+                            <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 shadow-lg shadow-primary/10 text-primary">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-black tracking-tight">Transaction Details</h3>
+                                <p class="text-[11px] uppercase tracking-[0.3em] font-black opacity-40 mt-1">Borrowing Records System</p>
+                            </div>
+                        </div>
+                        <button @click="showDetailsModal = false" class="btn btn-circle btn-ghost text-white/40 hover:text-white hover:rotate-90 transition-all duration-300">✕</button>
+                    </div>
+                    
+                    <div x-show="isLoadingDetails" class="flex flex-col items-center justify-center py-20 space-y-6">
+                        <div class="relative">
+                            <span class="loading loading-spinner w-16 h-16 text-primary"></span>
+                        </div>
+                        <p class="text-xl font-black opacity-40 animate-pulse uppercase tracking-[0.3em]">Synchronizing...</p>
+                    </div>
+
+                    <div x-show="!isLoadingDetails">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                            <!-- Left: Core Information (Static from fetch) -->
+                            <div class="lg:col-span-8">
+                                <div x-html="btDetailsContent"></div>
+                            </div>
+
+                            <!-- Right: Live Interactivity & Status -->
+                            <div class="lg:col-span-4 h-full">
+                                <!-- Live Countdown Card -->
+                                <template x-if="countdown && !countdown.isOverdue && btDetailsContent.includes('details-active')">
+                                    <div class="bg-white/5 rounded-[2.5rem] p-8 border border-white/10 shadow-2xl flex flex-col items-center justify-center h-full min-h-[220px]">
+                                        <h4 class="text-[10px] uppercase font-black tracking-[0.3em] text-primary mb-8 opacity-60">Time Remaining</h4>
+                                        <div class="grid grid-cols-4 gap-3 w-full">
+                                            <div class="flex flex-col items-center gap-2">
+                                                <div class="w-full aspect-square bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                                                    <span class="text-2xl font-black text-slate-900" x-text="countdown.days">0</span>
+                                                </div>
+                                                <span class="text-[8px] uppercase font-black tracking-tighter text-white/40">Days</span>
+                                            </div>
+                                            <div class="flex flex-col items-center gap-2">
+                                                <div class="w-full aspect-square bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                                                    <span class="text-2xl font-black text-slate-900" x-text="countdown.hours">0</span>
+                                                </div>
+                                                <span class="text-[8px] uppercase font-black tracking-tighter text-white/40">Hrs</span>
+                                            </div>
+                                            <div class="flex flex-col items-center gap-2">
+                                                <div class="w-full aspect-square bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                                                    <span class="text-2xl font-black text-slate-900" x-text="countdown.mins">0</span>
+                                                </div>
+                                                <span class="text-[8px] uppercase font-black tracking-tighter text-white/40">Mins</span>
+                                            </div>
+                                            <div class="flex flex-col items-center gap-2">
+                                                <div class="w-full aspect-square bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                                                    <span class="text-2xl font-black text-slate-900" x-text="countdown.secs">0</span>
+                                                </div>
+                                                <span class="text-[8px] uppercase font-black tracking-tighter text-white/40">Secs</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Overdue Alert (Live) -->
+                                <template x-if="countdown.isOverdue && btDetailsContent.includes('details-active')">
+                                    <div class="bg-error/10 rounded-[2.5rem] p-8 border border-error/20 flex flex-col items-center text-center space-y-4 animate-pulse h-full justify-center min-h-[220px]">
+                                        <div class="w-16 h-16 bg-error text-white rounded-3xl flex items-center justify-center shadow-2xl shadow-error/40">
+                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-error font-black uppercase tracking-[0.3em] text-sm">Overdue Item</h4>
+                                            <p class="text-[11px] font-bold opacity-40 mt-1">Fines are accumulating</p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fixed Footer for Actions -->
+                <div class="px-12 py-6 bg-white/5 border-t border-white/10 flex justify-between items-center shrink-0">
+                    <p class="text-[11px] opacity-40 font-medium italic tracking-tight">Live Sync: <span x-text="new Date().toLocaleTimeString()"></span></p>
+                    <button @click="showDetailsModal = false" class="text-white text-lg font-black hover:text-white/70 transition-colors tracking-tight">Close Window</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Return Modal -->
+    <template x-teleport="body">
+        <div class="modal modal-bottom sm:modal-middle backdrop-blur-md" :class="{ 'modal-open': showReturnModal }" style="background-color: rgba(0,0,0,0.6); z-index: 2000;">
+            <div class="modal-box max-w-lg glass text-white rounded-[2.5rem] p-0 border border-white/20 shadow-2xl relative overflow-hidden">
+                {{-- Decorative background glow --}}
+                <div class="absolute -top-24 -left-24 w-48 h-48 bg-primary/20 blur-[100px] rounded-full"></div>
+                
+                <div class="p-8 relative z-10">
+                    <div x-show="isLoadingReturn" class="flex flex-col items-center justify-center py-12 space-y-4">
+                        <span class="loading loading-spinner loading-lg text-primary"></span>
+                        <p class="text-[10px] uppercase font-black tracking-widest opacity-40 animate-pulse">Initializing Return Form...</p>
+                    </div>
+
+                    <div x-show="!isLoadingReturn" x-html="btReturnContent"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</div>
 </x-app-layout>

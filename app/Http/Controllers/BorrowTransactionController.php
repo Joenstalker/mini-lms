@@ -73,58 +73,60 @@ class BorrowTransactionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'student_id'        => 'required|exists:students,id',
-            'book_id'           => 'required|exists:books,id',
-            'quantity_borrowed' => 'required|integer|min:1',
-            'due_date'          => 'required|date|after:today',
+            'student_id' => 'required|exists:students,id',
+            'borrow_date' => 'required|date',
+            'due_date' => 'required|date|after_or_equal:borrow_date',
+            'books' => 'required|array|min:1',
+            'books.*.id' => 'required|exists:books,id',
+            'books.*.quantity' => 'required|integer|min:1',
         ]);
 
-        $book = Book::findOrFail($validated['book_id']);
+        try {
+            \DB::beginTransaction();
 
-        // Validate quantity against available copies
-        if ($book->available_quantity < $validated['quantity_borrowed']) {
-            $errorMessage = "Only {$book->available_quantity} cop(ies) available.";
-            
+            foreach ($validated['books'] as $bookData) {
+                $book = Book::findOrFail($bookData['id']);
+                $qty = (int)$bookData['quantity'];
+
+                if ($book->available_quantity < $qty) {
+                    throw new \Exception("Insufficient stock for '{$book->title}'. Only {$book->available_quantity} available.");
+                }
+
+                BorrowTransaction::create([
+                    'student_id' => $validated['student_id'],
+                    'book_id' => $book['id'],
+                    'borrow_date' => $validated['borrow_date'],
+                    'due_date' => $validated['due_date'],
+                    'quantity_borrowed' => $qty,
+                    'quantity_returned' => 0,
+                    'status' => 'borrowed',
+                    'fine_amount' => 0,
+                ]);
+
+                $book->decrement('available_quantity', $qty);
+            }
+
+            \DB::commit();
+            CacheService::invalidateDashboardCache();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Lending processed successfully for all selected books.'
+                ]);
+            }
+
+            return redirect()->route('borrow-transactions.index')->with('success', 'Lending processed successfully.');
+        } catch (\Exception $e) {
+            \DB::rollBack();
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $errorMessage,
-                    'errors' => ['quantity_borrowed' => [$errorMessage]]
+                    'message' => $e->getMessage()
                 ], 422);
             }
-            
-            return redirect()->back()
-                ->withErrors(['quantity_borrowed' => $errorMessage])
-                ->withInput();
+            return redirect()->back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
-
-        // Create transaction
-        $transaction = BorrowTransaction::create([
-            'student_id'        => $validated['student_id'],
-            'book_id'           => $validated['book_id'],
-            'borrow_date'       => now(),
-            'due_date'          => $validated['due_date'],
-            'quantity_borrowed' => $validated['quantity_borrowed'],
-            'quantity_returned' => 0,
-            'status'            => 'borrowed',
-            'fine_amount'       => 0,
-        ]);
-
-        $book->decrement('available_quantity', $validated['quantity_borrowed']);
-
-        CacheService::invalidateDashboardCache();
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => "Book borrowed successfully. Due: {$transaction->due_date->format('M d, Y')}",
-                'transaction' => $transaction->load(['student', 'book'])
-            ]);
-        }
-
-        return redirect()
-            ->route('borrow-transactions.show', $transaction)
-            ->with('success', "Book borrowed successfully. Due: {$transaction->due_date->format('M d, Y')}");
     }
 
     /**

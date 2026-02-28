@@ -1,12 +1,30 @@
 <x-app-layout>
-    <div class="space-y-6">
     <div class="space-y-6" x-data="{ 
         showCreateModal: false, 
         showEditModal: false,
+        showViewModal: false,
         search: '{{ $search ?? '' }}',
         isLoading: false,
+        isLoadingView: false,
         imagePreview: null,
+        viewContent: '',
         editData: { id: '', name: '', bio: '', profile_image: '' },
+        async fetchAuthorDetails(url) {
+            this.isLoadingView = true;
+            this.showViewModal = true;
+            this.viewContent = '';
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                this.viewContent = await response.text();
+            } catch (error) {
+                console.error('Fetch failed:', error);
+                this.viewContent = '<div class=\'alert alert-error\'>Failed to load author profile.</div>';
+            } finally {
+                this.isLoadingView = false;
+            }
+        },
         openEditModal(author) {
             this.editData = { ...author };
             this.imagePreview = author.profile_image || null;
@@ -228,6 +246,42 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </template>
+
+        <template x-teleport="body">
+            <!-- View Modal -->
+            <div class="modal backdrop-blur-md" :class="{ 'modal-open': showViewModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;" x-show="showViewModal">
+                <div class="modal-box max-w-3xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
+                    {{-- Fixed Header --}}
+                    <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
+                        <div>
+                            <h3 class="text-2xl font-black tracking-tight">Author Profile</h3>
+                            <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Comprehensive Overview</p>
+                        </div>
+                        <button @click="showViewModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
+                    </div>
+
+                    {{-- Scrollable Content Body --}}
+                    <div class="flex-grow overflow-y-auto p-8 pt-6 relative z-10 scrollbar-thin">
+                        <template x-if="isLoadingView">
+                            <div class="flex flex-col items-center justify-center py-20 space-y-4">
+                                <span class="loading loading-ring loading-lg text-primary"></span>
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Loading Contributor Details...</p>
+                            </div>
+                        </template>
+                        <template x-if="!isLoadingView">
+                            <div x-html="viewContent"></div>
+                        </template>
+                    </div>
+
+                    {{-- Fixed Footer --}}
+                    <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
+                        <button type="button" @click="showViewModal = false" class="btn btn-primary rounded-xl px-12 h-12 font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20">
+                            Got it
+                        </button>
+                    </div>
                 </div>
             </div>
         </template>

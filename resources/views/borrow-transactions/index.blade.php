@@ -11,6 +11,31 @@
         timer: null,
         search: '{{ $search ?? '' }}',
         isLoading: false,
+        
+        // Multi-book selection state
+        bookSearch: '',
+        selectedBooks: [], // Array of { id, title, available, quantity }
+        availableBooks: @js(\App\Models\Book::where('available_quantity', '>', 0)->get()->map(fn($b) => ['id' => $b->id, 'title' => $b->title, 'available' => $b->available_quantity])),
+
+        get filteredBooks() {
+            if (!this.bookSearch) return this.availableBooks;
+            const search = this.bookSearch.toLowerCase();
+            return this.availableBooks.filter(b => b.title.toLowerCase().includes(search));
+        },
+
+        toggleBook(book) {
+            const index = this.selectedBooks.findIndex(b => b.id === book.id);
+            if (index > -1) {
+                this.selectedBooks.splice(index, 1);
+            } else {
+                this.selectedBooks.push({ ...book, quantity: 1 });
+            }
+        },
+
+        isBookSelected(id) {
+            return this.selectedBooks.some(b => b.id === id);
+        },
+
         async fetchDetails(url) {
             this.isLoadingDetails = true;
             this.showDetailsModal = true;
@@ -92,8 +117,20 @@
             }
         },
         async submitCreate(event) {
+            if (this.selectedBooks.length === 0) {
+                Swal.fire({ icon: 'warning', title: 'Selection Empty', text: 'Please select at least one book to borrow.', confirmButtonColor: '#355872' });
+                return;
+            }
+
             const form = event.target;
             const formData = new FormData(form);
+            
+            // Append selected books data
+            this.selectedBooks.forEach((book, index) => {
+                formData.append(`books[${index}][id]`, book.id);
+                formData.append(`books[${index}][quantity]`, book.quantity);
+            });
+
             this.isLoading = true;
 
             try {
@@ -122,6 +159,7 @@
                     });
                     this.showCreateModal = false;
                     form.reset();
+                    this.selectedBooks = [];
                     await this.performSearch();
                 } else {
                     const errorMsg = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
@@ -251,16 +289,16 @@
         </div>
 
         <template x-teleport="body">
-            <div class="modal backdrop-blur-md" :class="{ 'modal-open': showCreateModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
-                <div class="modal-box max-w-xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
+            <div class="modal backdrop-blur-md" :class="{ 'modal-open': showCreateModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;" x-show="showCreateModal">
+                <div class="modal-box max-w-4xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
                     {{-- Decorative background glow --}}
                     <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 blur-[100px] rounded-full"></div>
                     
                     {{-- Fixed Header --}}
                     <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
                         <div>
-                            <h3 class="text-2xl font-black tracking-tight">New Transaction</h3>
-                            <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Process Book Issue</p>
+                            <h3 class="text-2xl font-black tracking-tight">New Batch Transaction</h3>
+                            <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Process Multiple Book Issues</p>
                         </div>
                         <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                     </div>
@@ -269,25 +307,62 @@
                         @csrf
                         
                         {{-- Scrollable Content Body --}}
-                        <div class="flex-grow overflow-y-auto p-8 pt-6 space-y-4 scrollbar-thin relative z-10">
+                        <div class="flex-grow overflow-y-auto p-8 pt-6 space-y-6 scrollbar-thin relative z-10">
+                            {{-- Student Selection --}}
                             <div class="form-control">
                                 <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Select Student</span></label>
                                 <select name="student_id" class="select w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white transition-all font-bold" required>
                                     <option value="" disabled selected class="bg-slate-900">Choose a student</option>
-                                    @foreach (\App\Models\Student::all() as $student)
-                                        <option value="{{ $student->id }}" class="bg-slate-900 text-white">{{ $student->name }} ({{ $student->email }})</option>
+                                    @foreach (\App\Models\Student::orderBy('name')->get() as $student)
+                                        <option value="{{ $student->id }}" class="bg-slate-900 text-white">{{ $student->name }} ({{ $student->student_id }})</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Select Book</span></label>
-                                <select name="book_id" class="select w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white transition-all font-bold" required>
-                                    <option value="" disabled selected class="bg-slate-900">Choose a book</option>
-                                    @foreach (\App\Models\Book::where('available_quantity', '>', 0)->get() as $book)
-                                        <option value="{{ $book->id }}" class="bg-slate-900 text-white">{{ $book->title }} ({{ $book->available_quantity }} available)</option>
-                                    @endforeach
-                                </select>
+
+                            {{-- Book Multi-Selection --}}
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-end">
+                                    <label class="label p-0"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Select Books & Quantities</span></label>
+                                    <div class="relative w-64">
+                                        <input type="text" x-model="bookSearch" placeholder="Search books..." class="input input-sm w-full bg-white/5 border-white/10 rounded-lg text-xs">
+                                        <svg class="w-3 h-3 absolute right-3 top-2.5 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
+                                    <div class="max-h-64 overflow-y-auto custom-scrollbar p-2 space-y-2">
+                                        <template x-for="book in filteredBooks" :key="book.id">
+                                            <div class="flex items-center gap-4 p-3 rounded-xl transition-all border border-transparent" :class="isBookSelected(book.id) ? 'bg-primary/10 border-primary/20' : 'hover:bg-white/5'">
+                                                <label class="flex items-center gap-3 flex-grow cursor-pointer">
+                                                    <input type="checkbox" :checked="isBookSelected(book.id)" @change="toggleBook(book)" class="checkbox checkbox-primary checkbox-sm rounded-md">
+                                                    <div class="min-w-0">
+                                                        <p class="font-bold text-sm truncate" x-text="book.title"></p>
+                                                        <p class="text-[9px] uppercase tracking-widest font-bold opacity-40" x-text="`${book.available} Available`"></p>
+                                                    </div>
+                                                </label>
+                                                
+                                                <template x-if="isBookSelected(book.id)">
+                                                    <div class="flex items-center gap-2 bg-white/5 p-1 px-2 rounded-lg border border-white/10">
+                                                        <span class="text-[9px] font-black opacity-30 uppercase">Qty:</span>
+                                                        <input type="number" 
+                                                            x-model="selectedBooks.find(b => b.id === book.id).quantity" 
+                                                            min="1" 
+                                                            :max="book.available" 
+                                                            class="w-12 bg-transparent border-none text-center font-black p-0 focus:ring-0 text-sm">
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="filteredBooks.length === 0">
+                                            <div class="py-8 text-center opacity-30">
+                                                <p class="text-xs font-black uppercase tracking-widest">No books found matching search</p>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
+
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="form-control">
                                     <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Borrow Date</span></label>
@@ -320,66 +395,66 @@
         <template x-teleport="body">
             <div class="modal backdrop-blur-md" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
                 <div class="modal-box max-w-5xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl overflow-hidden flex flex-col">
-                    <div class="p-6 md:p-10 overflow-y-auto flex-grow custom-scrollbar">
-                        <div class="flex justify-between items-center mb-6">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-8 md:p-12 overflow-y-auto flex-grow custom-scrollbar">
+                        <div class="flex justify-between items-start mb-10">
+                            <div class="flex items-center gap-5">
+                                <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 shadow-lg shadow-primary/10 text-primary">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-2xl font-black tracking-tight text-base-content">Transaction Details</h3>
-                                    <p class="text-[10px] uppercase tracking-widest font-bold opacity-40">Borrowing Records System</p>
+                                    <h3 class="text-3xl font-black tracking-tight text-white">Transaction Details</h3>
+                                    <p class="text-[11px] uppercase tracking-[0.3em] font-black opacity-40 mt-1">Borrowing Records System</p>
                                 </div>
                             </div>
-                            <button @click="showDetailsModal = false" class="btn btn-circle btn-ghost hover:rotate-90 transition-all duration-300">✕</button>
+                            <button @click="showDetailsModal = false" class="btn btn-circle btn-ghost text-white/40 hover:text-white hover:rotate-90 transition-all duration-300">✕</button>
                         </div>
                         
-                        <div x-show="isLoadingDetails" class="flex flex-col items-center justify-center py-16 space-y-6">
+                        <div x-show="isLoadingDetails" class="flex flex-col items-center justify-center py-20 space-y-6">
                             <div class="relative">
-                                <span class="loading loading-spinner w-12 h-12 text-primary"></span>
+                                <span class="loading loading-spinner w-16 h-16 text-primary"></span>
                             </div>
-                            <p class="text-lg font-bold opacity-60 animate-pulse uppercase tracking-[0.2em]">Synchronizing...</p>
+                            <p class="text-xl font-black opacity-40 animate-pulse uppercase tracking-[0.3em]">Synchronizing...</p>
                         </div>
 
                         <div x-show="!isLoadingDetails">
-                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                                 <!-- Left: Core Information (Static from fetch) -->
                                 <div class="lg:col-span-8">
                                     <div x-html="btDetailsContent"></div>
                                 </div>
 
                                 <!-- Right: Live Interactivity & Status -->
-                                <div class="lg:col-span-4 space-y-4">
+                                <div class="lg:col-span-4 h-full">
                                     <!-- Live Countdown Card -->
                                     <template x-if="countdown && !countdown.isOverdue && btDetailsContent.includes('details-active')">
-                                        <div class="bg-primary/5 rounded-[2rem] p-5 border border-primary/10 shadow-inner">
-                                            <h4 class="text-[9px] uppercase font-black tracking-[0.2em] text-primary mb-4 text-center opacity-60">Time Remaining</h4>
-                                            <div class="grid grid-cols-4 gap-2">
-                                                <div class="flex flex-col items-center">
-                                                    <div class="w-full aspect-square bg-base-100 rounded-xl flex items-center justify-center border border-base-300 shadow-sm">
-                                                        <span class="text-xl font-black text-primary" x-text="countdown.days">0</span>
+                                        <div class="bg-white/5 rounded-[2.5rem] p-8 border border-white/10 shadow-2xl flex flex-col items-center justify-center h-full min-h-[220px]">
+                                            <h4 class="text-[10px] uppercase font-black tracking-[0.3em] text-primary mb-8 opacity-60">Time Remaining</h4>
+                                            <div class="grid grid-cols-4 gap-3 w-full">
+                                                <div class="flex flex-col items-center gap-2">
+                                                    <div class="w-full aspect-square bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                                                        <span class="text-2xl font-black text-slate-900" x-text="countdown.days">0</span>
                                                     </div>
-                                                    <span class="text-[7px] uppercase font-bold mt-1 opacity-40">Days</span>
+                                                    <span class="text-[8px] uppercase font-black tracking-tighter text-white/40">Days</span>
                                                 </div>
-                                                <div class="flex flex-col items-center">
-                                                    <div class="w-full aspect-square bg-base-100 rounded-xl flex items-center justify-center border border-base-300 shadow-sm">
-                                                        <span class="text-xl font-black text-primary" x-text="countdown.hours">0</span>
+                                                <div class="flex flex-col items-center gap-2">
+                                                    <div class="w-full aspect-square bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                                                        <span class="text-2xl font-black text-slate-900" x-text="countdown.hours">0</span>
                                                     </div>
-                                                    <span class="text-[7px] uppercase font-bold mt-1 opacity-40">Hrs</span>
+                                                    <span class="text-[8px] uppercase font-black tracking-tighter text-white/40">Hrs</span>
                                                 </div>
-                                                <div class="flex flex-col items-center">
-                                                    <div class="w-full aspect-square bg-base-100 rounded-xl flex items-center justify-center border border-base-300 shadow-sm">
-                                                        <span class="text-xl font-black text-primary" x-text="countdown.mins">0</span>
+                                                <div class="flex flex-col items-center gap-2">
+                                                    <div class="w-full aspect-square bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                                                        <span class="text-2xl font-black text-slate-900" x-text="countdown.mins">0</span>
                                                     </div>
-                                                    <span class="text-[7px] uppercase font-bold mt-1 opacity-40">Mins</span>
+                                                    <span class="text-[8px] uppercase font-black tracking-tighter text-white/40">Mins</span>
                                                 </div>
-                                                <div class="flex flex-col items-center">
-                                                    <div class="w-full aspect-square bg-base-100 rounded-xl flex items-center justify-center border border-base-300 shadow-sm">
-                                                        <span class="text-xl font-black text-primary" x-text="countdown.secs">0</span>
+                                                <div class="flex flex-col items-center gap-2">
+                                                    <div class="w-full aspect-square bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+                                                        <span class="text-2xl font-black text-slate-900" x-text="countdown.secs">0</span>
                                                     </div>
-                                                    <span class="text-[7px] uppercase font-bold mt-1 opacity-40">Secs</span>
+                                                    <span class="text-[8px] uppercase font-black tracking-tighter text-white/40">Secs</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -387,32 +462,27 @@
 
                                     <!-- Overdue Alert (Live) -->
                                     <template x-if="countdown.isOverdue && btDetailsContent.includes('details-active')">
-                                        <div class="bg-error/10 rounded-[2rem] p-5 border border-error/20 flex flex-col items-center text-center space-y-2 animate-pulse">
-                                            <div class="w-10 h-10 bg-error text-white rounded-full flex items-center justify-center shadow-lg shadow-error/30">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div class="bg-error/10 rounded-[2.5rem] p-8 border border-error/20 flex flex-col items-center text-center space-y-4 animate-pulse h-full justify-center min-h-[220px]">
+                                            <div class="w-16 h-16 bg-error text-white rounded-3xl flex items-center justify-center shadow-2xl shadow-error/40">
+                                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                                                 </svg>
                                             </div>
                                             <div>
-                                                <h4 class="text-error font-black uppercase tracking-widest text-[10px]">Overdue Item</h4>
-                                                <p class="text-[10px] font-bold opacity-60">Fines accumulating</p>
+                                                <h4 class="text-error font-black uppercase tracking-[0.3em] text-sm">Overdue Item</h4>
+                                                <p class="text-[11px] font-bold opacity-40 mt-1">Fines are accumulating</p>
                                             </div>
                                         </div>
                                     </template>
-
-                                    <!-- Quick Actions Section -->
-                                    <div id="modal-actions-container"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Fixed Footer for Actions -->
-                    <div class="px-8 py-4 bg-base-200/50 border-t border-base-300 flex justify-between items-center shrink-0">
-                        <p class="text-[10px] opacity-40 italic">Live Sync: <span x-text="new Date().toLocaleTimeString()"></span></p>
-                        <div class="flex gap-4">
-                            <button @click="showDetailsModal = false" class="btn btn-ghost btn-md rounded-xl px-8 font-bold">Close Window</button>
-                        </div>
+                    <div class="px-12 py-6 bg-white/5 border-t border-white/10 flex justify-between items-center shrink-0">
+                        <p class="text-[11px] opacity-40 italic font-medium tracking-tight">Live Sync: <span x-text="new Date().toLocaleTimeString()"></span></p>
+                        <button @click="showDetailsModal = false" class="text-white text-lg font-black hover:text-white/70 transition-colors tracking-tight">Close Window</button>
                     </div>
                 </div>
             </div>
@@ -445,3 +515,20 @@
 
     </div>
 </x-app-layout>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+</style>

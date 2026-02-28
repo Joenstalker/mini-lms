@@ -77,15 +77,20 @@ class AuthorController extends Controller
 
         $author = Author::create($validated);
 
-        return redirect()->route('authors.show', $author)->with('success', 'Author created successfully.');
+        return redirect()->route('authors.index')->with('success', 'Author created successfully.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Author $author)
+    public function show(Author $author, Request $request)
     {
         $author->load('books');
+        
+        if ($request->ajax()) {
+            return view('authors.partials.show_content', compact('author'))->render();
+        }
+        
         return view('authors.show', compact('author'));
     }
 
@@ -110,7 +115,7 @@ class AuthorController extends Controller
 
         $author->update($validated);
 
-        return redirect()->route('authors.show', $author)->with('success', 'Author updated successfully.');
+        return redirect()->route('authors.index')->with('success', 'Author updated successfully.');
     }
 
     /**
