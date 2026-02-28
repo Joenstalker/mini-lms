@@ -12,15 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->longText('profile_image')->nullable()->after('email');
+            if (!Schema::hasColumn('users', 'profile_image')) {
+                $table->longText('profile_image')->nullable()->after('email');
+            }
         });
 
         Schema::table('students', function (Blueprint $table) {
-            $table->longText('profile_image')->nullable()->after('address');
+            if (!Schema::hasColumn('students', 'profile_image')) {
+                $table->longText('profile_image')->nullable()->after('address');
+            }
         });
 
         Schema::table('authors', function (Blueprint $table) {
-            $table->longText('profile_image')->nullable()->after('bio');
+            if (!Schema::hasColumn('authors', 'profile_image')) {
+                $table->longText('profile_image')->nullable()->after('bio');
+            }
         });
     }
 
@@ -30,15 +36,21 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('profile_image');
+            if (Schema::hasColumn('users', 'profile_image')) {
+                $table->dropColumn('profile_image');
+            }
         });
 
         Schema::table('students', function (Blueprint $table) {
-            $table->dropColumn('profile_image');
+            if (Schema::hasColumn('students', 'profile_image')) {
+                $table->dropColumn('profile_image');
+            }
         });
 
         Schema::table('authors', function (Blueprint $table) {
-            $table->dropColumn('profile_image');
+            if (Schema::hasColumn('authors', 'profile_image')) {
+                $table->dropColumn('profile_image');
+            }
         });
     }
 };

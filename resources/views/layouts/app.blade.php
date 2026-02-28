@@ -1,7 +1,12 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" 
           x-data="{ 
           darkMode: localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches), 
-          showProfileModal: false
+          showProfileModal: false,
+          userData: {
+              name: '{{ Auth::user()->name }}',
+              email: '{{ Auth::user()->email }}',
+              profile_image: '{{ Auth::user()->profile_image }}'
+          }
       }" 
       :data-theme="darkMode ? 'dark' : 'light'" 
       :class="{ 'dark': darkMode }"

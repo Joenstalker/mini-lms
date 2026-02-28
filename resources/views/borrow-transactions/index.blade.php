@@ -5,8 +5,8 @@
         showReturnModal: false,
         isLoadingDetails: false,
         isLoadingReturn: false,
-        detailsContent: '',
-        returnContent: '',
+        btDetailsContent: '',
+        btReturnContent: '',
         countdown: { days: 0, hours: 0, mins: 0, secs: 0, isOverdue: false },
         timer: null,
         search: '{{ $search ?? '' }}',
@@ -14,13 +14,13 @@
         async fetchDetails(url) {
             this.isLoadingDetails = true;
             this.showDetailsModal = true;
-            this.detailsContent = '';
+            this.btDetailsContent = '';
             if (this.timer) clearInterval(this.timer);
             try {
                 const response = await fetch(url, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
-                this.detailsContent = await response.text();
+                this.btDetailsContent = await response.text();
                 
                 // Extract due date and status from hidden inputs in partial
                 this.$nextTick(() => {
@@ -34,7 +34,7 @@
                 });
             } catch (error) {
                 console.error('Fetch failed:', error);
-                this.detailsContent = '<div class=\'alert alert-error\'>Failed to load transaction details.</div>';
+                this.btDetailsContent = '<div class=\'alert alert-error\'>Failed to load transaction details.</div>';
             } finally {
                 this.isLoadingDetails = false;
             }
@@ -63,15 +63,15 @@
         async fetchReturnForm(url) {
             this.isLoadingReturn = true;
             this.showReturnModal = true;
-            this.returnContent = '';
+            this.btReturnContent = '';
             try {
                 const response = await fetch(url, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
-                this.returnContent = await response.text();
+                this.btReturnContent = await response.text();
             } catch (error) {
                 console.error('Fetch failed:', error);
-                this.returnContent = '<div class=\'alert alert-error\'>Failed to load return form.</div>';
+                this.btReturnContent = '<div class=\'alert alert-error\'>Failed to load return form.</div>';
             } finally {
                 this.isLoadingReturn = false;
             }
@@ -90,6 +90,118 @@
             } finally {
                 this.isLoading = false;
             }
+        },
+        async submitCreate(event) {
+            const form = event.target;
+            const formData = new FormData(form);
+            this.isLoading = true;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: result.message,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    this.showCreateModal = false;
+                    form.reset();
+                    await this.performSearch();
+                } else {
+                    const errorMsg = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
+                    throw new Error(errorMsg || 'Process failed');
+                }
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'Issue Failed', text: error.message, confirmButtonColor: '#355872' });
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        async submitReturn(event) {
+            const form = event.target;
+            const formData = new FormData(form);
+            this.isLoadingReturn = true;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Returned!',
+                        text: result.message,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    this.showReturnModal = false;
+                    await this.performSearch();
+                } else {
+                    const errorMsg = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
+                    throw new Error(errorMsg || 'Return failed');
+                }
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'Return Failed', text: error.message, confirmButtonColor: '#355872' });
+            } finally {
+                this.isLoadingReturn = false;
+            }
+        },
+        confirmDelete(transactionId, status, studentName) {
+            let title = 'Are you sure?';
+            let text = 'You will not be able to recover this transaction!';
+            let icon = 'warning';
+
+            if (status === 'borrowed' || status === 'partially_returned') {
+                title = 'Unreturned Books Detected!';
+                text = `The book has not yet been returned by ${studentName}. Deleting this will restore the book stock. Proceed anyway?`;
+                icon = 'error';
+            }
+
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Keep it',
+                background: '#1e293b',
+                color: '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById(`delete-form-${transactionId}`);
+                    if (form) form.submit();
+                }
+            });
         }
     }">
         <div class="glass text-white rounded-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-white/10">
@@ -148,12 +260,12 @@
                     <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
                         <div>
                             <h3 class="text-2xl font-black tracking-tight">New Transaction</h3>
-                            <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Process Book Loan</p>
+                            <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Process Book Issue</p>
                         </div>
                         <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                     </div>
 
-                    <form action="{{ route('borrow-transactions.store') }}" method="POST" class="flex flex-col flex-grow overflow-hidden">
+                    <form @submit.prevent="submitCreate($event)" action="{{ route('borrow-transactions.store') }}" method="POST" class="flex flex-col flex-grow overflow-hidden">
                         @csrf
                         
                         {{-- Scrollable Content Body --}}
@@ -196,7 +308,7 @@
                         <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
                             <button type="button" @click="showCreateModal = false" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all">Cancel</button>
                             <button type="submit" class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:scale-105 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-primary/20 transition-all duration-300">
-                                Process Loan
+                                Process Issue
                             </button>
                         </div>
                     </form>
@@ -235,13 +347,13 @@
                             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                                 <!-- Left: Core Information (Static from fetch) -->
                                 <div class="lg:col-span-8">
-                                    <div x-html="detailsContent"></div>
+                                    <div x-html="btDetailsContent"></div>
                                 </div>
 
                                 <!-- Right: Live Interactivity & Status -->
                                 <div class="lg:col-span-4 space-y-4">
                                     <!-- Live Countdown Card -->
-                                    <template x-if="countdown && !countdown.isOverdue && detailsContent.includes('details-active')">
+                                    <template x-if="countdown && !countdown.isOverdue && btDetailsContent.includes('details-active')">
                                         <div class="bg-primary/5 rounded-[2rem] p-5 border border-primary/10 shadow-inner">
                                             <h4 class="text-[9px] uppercase font-black tracking-[0.2em] text-primary mb-4 text-center opacity-60">Time Remaining</h4>
                                             <div class="grid grid-cols-4 gap-2">
@@ -274,7 +386,7 @@
                                     </template>
 
                                     <!-- Overdue Alert (Live) -->
-                                    <template x-if="countdown.isOverdue && detailsContent.includes('details-active')">
+                                    <template x-if="countdown.isOverdue && btDetailsContent.includes('details-active')">
                                         <div class="bg-error/10 rounded-[2rem] p-5 border border-error/20 flex flex-col items-center text-center space-y-2 animate-pulse">
                                             <div class="w-10 h-10 bg-error text-white rounded-full flex items-center justify-center shadow-lg shadow-error/30">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,7 +431,7 @@
                             <p class="text-[10px] uppercase font-black tracking-widest opacity-40 animate-pulse">Initializing Return Form...</p>
                         </div>
 
-                        <div x-show="!isLoadingReturn" x-html="returnContent"></div>
+                        <div x-show="!isLoadingReturn" x-html="btReturnContent"></div>
                     </div>
                 </div>
             </div>

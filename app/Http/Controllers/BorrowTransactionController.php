@@ -68,6 +68,7 @@ class BorrowTransactionController extends Controller
 
     /**
      * Store a new borrow transaction (admin processes at the counter).
+     * Allows multiple copies of the same book title in one transaction.
      */
     public function store(Request $request)
     {
@@ -80,12 +81,24 @@ class BorrowTransactionController extends Controller
 
         $book = Book::findOrFail($validated['book_id']);
 
+        // Validate quantity against available copies
         if ($book->available_quantity < $validated['quantity_borrowed']) {
+            $errorMessage = "Only {$book->available_quantity} cop(ies) available.";
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'errors' => ['quantity_borrowed' => [$errorMessage]]
+                ], 422);
+            }
+            
             return redirect()->back()
-                ->withErrors(['quantity_borrowed' => "Only {$book->available_quantity} cop(ies) available."])
+                ->withErrors(['quantity_borrowed' => $errorMessage])
                 ->withInput();
         }
 
+        // Create transaction
         $transaction = BorrowTransaction::create([
             'student_id'        => $validated['student_id'],
             'book_id'           => $validated['book_id'],
@@ -100,6 +113,14 @@ class BorrowTransactionController extends Controller
         $book->decrement('available_quantity', $validated['quantity_borrowed']);
 
         CacheService::invalidateDashboardCache();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Book borrowed successfully. Due: {$transaction->due_date->format('M d, Y')}",
+                'transaction' => $transaction->load(['student', 'book'])
+            ]);
+        }
 
         return redirect()
             ->route('borrow-transactions.show', $transaction)
@@ -191,6 +212,14 @@ class BorrowTransactionController extends Controller
             $message .= " Fine due: ₱{$borrowTransaction->fine_amount}";
         }
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'transaction' => $borrowTransaction->load(['student', 'book'])
+            ]);
+        }
+
         return redirect()
             ->route('borrow-transactions.show', $borrowTransaction)
             ->with('success', $message);
@@ -201,9 +230,12 @@ class BorrowTransactionController extends Controller
      */
     public function destroy(BorrowTransaction $borrowTransaction)
     {
+        // Restore inventory if the transaction is still active
         if ($borrowTransaction->status !== 'returned') {
-            return redirect()->back()
-                ->withErrors(['error' => 'Cannot delete an active transaction. Return all books first.']);
+            $unreturnedQuantity = $borrowTransaction->quantity_borrowed - $borrowTransaction->quantity_returned;
+            if ($unreturnedQuantity > 0) {
+                $borrowTransaction->book->increment('available_quantity', $unreturnedQuantity);
+            }
         }
 
         $borrowTransaction->delete();

@@ -31,7 +31,7 @@
                             <option value="{{ $student->id }}" {{ old('student_id', request('student_id')) == $student->id ? 'selected' : '' }}>
                                 {{ $student->name }}
                                 @if ($student->borrowTransactions->whereIn('status', ['borrowed','partially_returned'])->count())
-                                    — ({{ $student->borrowTransactions->whereIn('status', ['borrowed','partially_returned'])->count() }} active loan{{ $student->borrowTransactions->whereIn('status', ['borrowed','partially_returned'])->count() > 1 ? 's' : '' }})
+                                    — ({{ $student->borrowTransactions->whereIn('status', ['borrowed','partially_returned'])->count() }} active borrowing{{ $student->borrowTransactions->whereIn('status', ['borrowed','partially_returned'])->count() > 1 ? 's' : '' }})
                                 @endif
                             </option>
                         @endforeach

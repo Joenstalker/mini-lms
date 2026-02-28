@@ -22,7 +22,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Test User',
                 'password' => bcrypt('password'), // Ensure it has a password if created
-            ]
+                'profile_image' => 'images/test.png',
+                ]
         );
 
         $this->call([

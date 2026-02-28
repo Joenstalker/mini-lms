@@ -19,6 +19,14 @@
 
                 <div class="form-control">
                     <label class="label">
+                        <span class="label-text font-semibold">Student ID * (10 digits)</span>
+                    </label>
+                    <input type="text" name="student_id" class="input input-bordered @error('student_id') input-error @enderror" placeholder="2612345678" value="{{ old('student_id') }}" required maxlength="10">
+                    @error('student_id')<span class="text-error text-sm mt-1">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
                         <span class="label-text font-semibold">Email *</span>
                     </label>
                     <input type="email" name="email" class="input input-bordered @error('email') input-error @enderror" placeholder="john@example.com" value="{{ old('email') }}" required>
@@ -29,7 +37,7 @@
                     <label class="label">
                         <span class="label-text font-semibold">Phone</span>
                     </label>
-                    <input type="text" name="phone" class="input input-bordered" placeholder="09xxxxxxxxx" value="{{ old('phone') }}">
+                    <input type="tel" name="phone" class="input input-bordered @error('phone') input-error @enderror" placeholder="09xxxxxxxxx" value="{{ old('phone') }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
 
                 <div class="form-control">

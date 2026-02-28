@@ -31,6 +31,12 @@
                     });
                     
                     if (response.ok) {
+                        const data = await response.json();
+                        // Update global state in app.blade.php
+                        this.userData.name = data.user.name;
+                        this.userData.email = data.user.email;
+                        this.userData.profile_image = data.user.profile_image;
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Profile Updated',

@@ -116,9 +116,9 @@ class BookSeeder extends Seeder
 
             // Assign cover image based on publisher, or use the default
             $imageName = $coverImages[$bookData['publisher']] ?? 'default-book-cover.png';
-            $bookData['cover_image'] = asset("images/{$imageName}");
+            $bookData['cover_image'] = $imageName;
 
-            $book = Book::firstOrCreate(['title' => $bookData['title']], $bookData);
+            $book = Book::updateOrCreate(['title' => $bookData['title']], $bookData);
 
             $authorIds = [];
             foreach ($authors as $authorName) {

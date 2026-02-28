@@ -68,7 +68,7 @@
                                         'email' => $student->email,
                                         'phone' => $student->phone,
                                         'address' => $student->address,
-                                        'pin' => $student->pin,
+                                        'student_id' => $student->student_id,
                                         'profile_image' => $student->profile_image
                                     ]) }}"
                                     class="btn btn-sm btn-ghost hover:bg-warning/20 text-white/70 hover:text-warning transition-all duration-300 rounded-lg group" title="Edit Student">

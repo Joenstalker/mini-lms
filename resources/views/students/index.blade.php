@@ -2,14 +2,14 @@
     <div class="space-y-6" x-data="studentDirectory({ 
         showCreateModal: {{ $errors->any() && !old('id') ? 'true' : 'false' }}, 
         showEditModal: {{ $errors->any() && old('id') ? 'true' : 'false' }},
-        initialPin: {{ json_encode(old('pin', '')) }},
+        initialStudentId: {{ json_encode(old('student_id', '')) }},
         initialEditData: { 
             id: {{ json_encode(old('id', '')) }}, 
             name: {{ json_encode(old('name', '')) }}, 
             email: {{ json_encode(old('email', '')) }}, 
             phone: {{ json_encode(old('phone', '')) }}, 
             address: {{ json_encode(old('address', '')) }}, 
-            pin: {{ json_encode(old('pin', '')) }},
+            student_id: {{ json_encode(old('student_id', '')) }},
             profile_image: {{ json_encode(old('profile_image', '')) }}
         },
         initialSearch: {{ json_encode($search ?? '') }},
@@ -22,7 +22,7 @@
                 showCreateModal: config.showCreateModal,
                 showEditModal: config.showEditModal,
                 showDetailsModal: false,
-                createPIN: config.initialPin,
+                createStudentId: config.initialStudentId,
                 imagePreview: null,
                 editData: config.initialEditData,
                 detailsHtml: '',
@@ -45,14 +45,7 @@
                     }
                 },
 
-                generatePIN(type) {
-                    const pin = Math.floor(100000 + Math.random() * 900000).toString();
-                    if (type === 'create') {
-                        this.createPIN = pin;
-                    } else {
-                        this.editData.pin = pin;
-                    }
-                },
+
 
                 openEditModal(student) {
                     this.editData = { ...student };
@@ -172,7 +165,7 @@
                                 timerProgressBar: true
                             });
                             this.showCreateModal = false;
-                            this.createPIN = '';
+                            this.createStudentId = '';
                             this.imagePreview = null;
                             form.reset();
                             await this.performSearch();
@@ -223,7 +216,7 @@
                 </div>
             </div>
 
-            <button @click="showCreateModal = true; imagePreview = null; createPIN = ''" class="btn btn-primary btn-lg rounded-xl shadow-md transition-all shrink-0">
+            <button @click="showCreateModal = true; imagePreview = null; createStudentId = ''" class="btn btn-primary btn-lg rounded-xl shadow-md transition-all shrink-0">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
@@ -293,15 +286,21 @@
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Phone Number</span></label>
-                                <input type="text" name="phone" value="{{ old('phone') }}" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white placeholder:text-white/20 transition-all font-bold">
+                                <input type="text" name="phone" value="{{ old('phone') }}" @input="event.target.value = event.target.value.replace(/[^0-9]/g, '')" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white placeholder:text-white/20 transition-all font-bold">
                             </div>
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Personal PIN (6 digits)</span>
-                                    <button type="button" @click="generatePIN('create')" class="label-text-alt text-primary hover:text-primary-focus transition-colors font-black uppercase text-[9px] tracking-widest">Generate</button>
+                                    <span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Student ID (10 digits)</span>
                                 </label>
-                                <input type="text" name="pin" x-model="createPIN" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white placeholder:text-white/20 transition-all font-bold @error('pin') border-error/50 @enderror" required placeholder="6 digits" minlength="4" maxlength="6">
-                                @error('pin') <span class="text-error text-[10px] mt-1 font-bold">{{ $message }}</span> @enderror
+                                <input type="text" 
+                                       name="student_id" 
+                                       x-model="createStudentId" 
+                                       @input="createStudentId = createStudentId.replace(/[^0-9]/g, '').slice(0, 10)"
+                                       class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white placeholder:text-white/20 transition-all font-bold @error('student_id') border-error/50 @enderror" 
+                                       required 
+                                       placeholder="10 digit number" 
+                                       maxlength="10">
+                                @error('student_id') <span class="text-error text-[10px] mt-1 font-bold">{{ $message }}</span> @enderror
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Address</span></label>
@@ -381,15 +380,20 @@
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Phone Number</span></label>
-                                <input type="text" name="phone" x-model="editData.phone" class="input w-full bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-xl h-12 text-white transition-all font-bold">
+                                <input type="text" name="phone" x-model="editData.phone" @input="editData.phone = editData.phone.replace(/[^0-9]/g, '')" class="input w-full bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-xl h-12 text-white transition-all font-bold">
                             </div>
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Personal PIN (6 digits)</span>
-                                    <button type="button" @click="generatePIN('edit')" class="label-text-alt text-warning hover:text-warning-focus transition-colors font-black uppercase text-[9px] tracking-widest">Generate New</button>
+                                    <span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Student ID (10 digits)</span>
                                 </label>
-                                <input type="text" name="pin" x-model="editData.pin" class="input w-full bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-xl h-12 text-white transition-all font-bold @error('pin') border-error/50 @enderror" required minlength="4" maxlength="6">
-                                @error('pin') <span class="text-error text-[10px] mt-1 font-bold">{{ $message }}</span> @enderror
+                                <input type="text" 
+                                       name="student_id" 
+                                       x-model="editData.student_id" 
+                                       @input="editData.student_id = editData.student_id.replace(/[^0-9]/g, '').slice(0, 10)"
+                                       class="input w-full bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-xl h-12 text-white transition-all font-bold @error('student_id') border-error/50 @enderror" 
+                                       required 
+                                       maxlength="10">
+                                @error('student_id') <span class="text-error text-[10px] mt-1 font-bold">{{ $message }}</span> @enderror
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Address</span></label>
@@ -411,7 +415,7 @@
         </template>
 
         <template x-teleport="body">
-            <div class="modal backdrop-blur-md" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
+            <div class="modal backdrop-blur-md" x-show="showDetailsModal" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
                 <div class="modal-box max-w-4xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
                     {{-- Decorative background glow --}}
                     <div class="absolute -top-24 -right-24 w-48 h-48 bg-info/10 blur-[100px] rounded-full"></div>

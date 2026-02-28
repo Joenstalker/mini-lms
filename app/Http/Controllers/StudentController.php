@@ -80,13 +80,21 @@ class StudentController extends Controller
         $validated = $request->validate([
             'name'    => 'required|string|max:255',
             'email'   => 'required|email|unique:students',
-            'phone'   => 'nullable|string|max:20',
+            'phone'   => 'required|numeric|digits_between:10,15|unique:students,phone',
             'address' => 'nullable|string',
-            'pin'     => 'required|string|size:6',
+            'student_id' => 'required|string|size:10|unique:students',
             'profile_image' => 'nullable|string',
         ]);
 
         $student = Student::create($validated);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Student created successfully.',
+                'student' => $student
+            ]);
+        }
 
         return redirect()->route('students.show', $student)->with('success', 'Student created successfully.');
     }
@@ -122,9 +130,9 @@ class StudentController extends Controller
         $validated = $request->validate([
             'name'    => 'required|string|max:255',
             'email'   => 'required|email|unique:students,email,' . $student->id,
-            'phone'   => 'nullable|string|max:20',
+            'phone'   => 'required|numeric|digits_between:10,15|unique:students,phone,' . $student->id,
             'address' => 'nullable|string',
-            'pin'     => 'required|string|size:6',
+            'student_id' => 'required|string|size:10|unique:students,student_id,' . $student->id,
             'profile_image' => 'nullable|string',
         ]);
 

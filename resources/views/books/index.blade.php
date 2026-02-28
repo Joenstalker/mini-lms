@@ -184,7 +184,7 @@
                     {{-- Book Cover --}}
                     <div class="relative aspect-[3/4] overflow-hidden bg-base-200">
                         <img
-                            src="{{ $book->cover_image ?: asset('build/images/default-book-cover.png') }}"
+                            src="{{ $book->cover_image ? (Str::startsWith($book->cover_image, 'http') ? $book->cover_image : '/images/' . $book->cover_image) : '/images/default-book-cover.png' }}"
                             alt="{{ $book->title }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         >
@@ -273,7 +273,7 @@
                                     <td>
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-16 rounded-lg bg-base-300 flex-shrink-0 overflow-hidden shadow-sm border border-base-content/5">
-                                                <img src="{{ $book->cover_image ?: asset('build/images/default-book-cover.png') }}" class="w-full h-full object-cover">
+                                                <img src="{{ $book->cover_image ? (Str::startsWith($book->cover_image, 'http') ? $book->cover_image : '/images/' . $book->cover_image) : '/images/default-book-cover.png' }}" class="w-full h-full object-cover">
                                             </div>
                                             <div>
                                                 <div class="font-bold text-base text-white">{{ $book->title }}</div>
@@ -858,8 +858,9 @@
                         this.studentSearch = student.name;
                         this.showStudentDropdown = false;
                     },
-
                     openEditModal(book) {
+                        let imageUrl = book.cover_image ? (book.cover_image.startsWith('http') || book.cover_image.startsWith('data:') ? book.cover_image : '/images/' + book.cover_image) : '/images/default-book-cover.png';
+                        
                         this.editData = { 
                             id: book.id,
                             title: book.title,
@@ -867,14 +868,15 @@
                             published_year: book.published_year || '',
                             total_quantity: book.total_quantity,
                             description: book.description || '',
-                            cover_image: book.cover_image || '{{ asset('build/images/default-book-cover.png') }}',
+                            cover_image: imageUrl,
                             authors: book.authors.map(a => a.id.toString())
                         };
                         this.showEditModal = true;
                     },
 
                     openDetailsModal(book) {
-                        this.showData = { ...book };
+                        let imageUrl = book.cover_image ? (book.cover_image.startsWith('http') || book.cover_image.startsWith('data:') ? book.cover_image : '/images/' + book.cover_image) : '/images/default-book-cover.png';
+                        this.showData = { ...book, cover_image: imageUrl };
                         this.showDetailsModal = true;
                     },
 

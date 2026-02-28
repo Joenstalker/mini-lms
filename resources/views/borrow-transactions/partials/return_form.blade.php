@@ -1,4 +1,4 @@
-<form action="{{ route('borrow-transactions.update', $borrowTransaction) }}" method="POST" class="space-y-6">
+<form @submit.prevent="submitReturn($event)" action="{{ route('borrow-transactions.update', $borrowTransaction) }}" method="POST" class="space-y-6">
     @csrf
     @method('PATCH')
 
