@@ -631,7 +631,7 @@
                             <!-- Book Cover in Details -->
                             <div class="w-full sm:w-48 shrink-0">
                                 <div class="aspect-[3/4.2] rounded-[2rem] bg-white/5 shadow-2xl overflow-hidden border border-white/10 ring-1 ring-white/5">
-                                    <img :src="showData.cover_image || '{{ asset('build/images/default-book-cover.png') }}'" class="w-full h-full object-cover">
+                                    <img :src="showData.cover_image || '/images/default-book-cover.png'" class="w-full h-full object-cover">
                                 </div>
                             </div>
 
@@ -810,7 +810,7 @@
         </template>
 
         <script>
-            document.addEventListener('alpine:init', () => {
+            window._registerBookCatalog = () => {
                 Alpine.data('bookCatalog', () => ({
                     showCreateModal: false,
                     showEditModal: false,
@@ -1014,7 +1014,12 @@
                         await this.performSearch();
                     }
                 }));
-            });
+            };
+
+            // First page load: wait for alpine:init
+            document.addEventListener('alpine:init', window._registerBookCatalog);
+            // Turbo Drive navigation: alpine:init won't fire again, register immediately
+            if (window.Alpine) window._registerBookCatalog();
         </script>
     </div>
 </x-app-layout>

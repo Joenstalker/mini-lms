@@ -120,11 +120,19 @@
                         </div>
 
                         <!-- Top Right Actions -->
-                        <div class="flex items-center gap-2 ml-auto">
-                            <!-- User context info (Desktop only) -->
-                            <div class="hidden md:flex flex-col items-end mr-2">
-                                <span class="text-xs font-bold">{{ Auth::user()->name }}</span>
-                                <span class="text-[10px] opacity-50 uppercase tracking-tighter">Library Admin</span>
+                        <div class="flex items-center gap-3 ml-auto">
+                            <!-- Avatar + Role stacked -->
+                            <div class="flex flex-col items-center gap-1">
+                                <div class="w-9 h-9 rounded-full overflow-hidden border-2 border-white/20 shadow-lg shrink-0">
+                                    @if(Auth::user()->profile_image)
+                                        <img src="{{ Auth::user()->profile_image }}" class="w-full h-full object-cover">
+                                    @else
+                                        <div class="w-full h-full bg-primary flex items-center justify-center font-black text-white text-sm">
+                                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <span class="text-[9px] font-black text-white uppercase tracking-tighter leading-none hidden md:block">Library Admin</span>
                             </div>
                         </div>
                     </div>
@@ -155,12 +163,28 @@
                             cancelButtonColor: 'transparent',
                             confirmButtonText: 'Yes, Sign Out',
                             cancelButtonText: 'Cancel',
+                            backdrop: 'rgba(0,0,0,0.5)',
                             customClass: {
-                                popup: 'rounded-[2rem] bg-slate-900 text-white border border-white/10 shadow-2xl backdrop-blur-xl',
+                                popup: 'rounded-[2rem] border border-white/10 shadow-2xl',
                                 title: 'text-2xl font-black text-white',
                                 htmlContainer: 'text-white/60',
                                 confirmButton: 'btn btn-error px-10 rounded-2xl font-bold',
                                 cancelButton: 'btn btn-ghost px-10 rounded-2xl font-bold text-white/40 hover:text-white'
+                            },
+                            didOpen: () => {
+                                // Apply glass styling to the popup
+                                const popup = Swal.getPopup();
+                                popup.style.background = 'rgba(15, 23, 42, 0.6)';
+                                popup.style.backdropFilter = 'blur(20px)';
+                                popup.style.webkitBackdropFilter = 'blur(20px)';
+                                popup.style.border = '1px solid rgba(255,255,255,0.1)';
+
+                                // Blur the Swal backdrop
+                                const backdrop = document.querySelector('.swal2-backdrop-show');
+                                if (backdrop) {
+                                    backdrop.style.backdropFilter = 'blur(8px)';
+                                    backdrop.style.webkitBackdropFilter = 'blur(8px)';
+                                }
                             },
                             buttonsStyling: false
                         }).then((result) => {

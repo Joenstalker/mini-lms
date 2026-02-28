@@ -108,7 +108,10 @@
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
                 const html = await response.text();
-                document.getElementById('transactions-table-content').innerHTML = html;
+                const container = document.getElementById('transactions-table-content');
+                if (container) {
+                    container.innerHTML = html;
+                }
                 window.history.replaceState(null, null, `?search=${encodeURIComponent(this.search)}`);
             } catch (error) {
                 console.error('Search failed:', error);

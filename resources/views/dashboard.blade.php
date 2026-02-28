@@ -76,13 +76,13 @@
         }
     }">
         <!-- Header -->
-        <header class="relative overflow-hidden rounded-[2.5rem] bg-slate-900 text-white p-12 md:p-16 shadow-xl border border-white/5">
+        <header class="relative overflow-hidden glass-card text-white p-12 md:p-16">
             <div class="relative z-10 space-y-4">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white/60 text-[10px] font-bold uppercase tracking-widest">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white/60 text-[10px] font-bold uppercase tracking-widest shadow-lg">
                     Library Management System
                 </div>
                 <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                    Welcome back, <span class="text-primary-content bg-primary px-3 py-1 rounded-2xl">{{ Auth::user()->name }}</span>
+                    Welcome back, <span class="text-primary-content bg-primary/80 backdrop-blur-md px-4 py-2 rounded-2xl">{{ Auth::user()->name }}</span>
                 </h1>
                 <p class="text-lg opacity-60 max-w-2xl font-medium">Your library is currently healthy. Here's what's happening today.</p>
             </div>
@@ -91,37 +91,35 @@
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
-                <div class="stat-figure text-primary text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">📚</div>
-                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest">Books in Catalog</div>
-                <div class="stat-value text-4xl font-extrabold mt-1 text-white">{{ $stats['total_books'] ?? 0 }}</div>
-                <div class="stat-desc text-primary font-semibold mt-2 flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                    24 new this week
+                <div class="stat-figure mb-4">
+                    <img src="{{ asset('icons/books-icon.png') }}" alt="Books" class="w-20 h-20 mx-auto">
                 </div>
+                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest text-center">Books in Catalog</div>
+                <div class="stat-value text-4xl font-extrabold mt-2 text-white text-center">{{ $stats['total_books'] ?? 0 }}</div>
             </div>
 
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
-                <div class="stat-figure text-secondary text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">👥</div>
-                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest">Active Students</div>
-                <div class="stat-value text-4xl font-extrabold mt-1 text-white">{{ $stats['total_students'] ?? 0 }}</div>
-                <div class="stat-desc text-secondary font-semibold mt-2 flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                    12 new members
+                <div class="stat-figure mb-4">
+                    <img src="{{ asset('icons/students-icon.png') }}" alt="Students" class="w-20 h-20 mx-auto">
                 </div>
+                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest text-center">Active Students</div>
+                <div class="stat-value text-4xl font-extrabold mt-2 text-white text-center">{{ $stats['total_students'] ?? 0 }}</div>
             </div>
 
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
-                <div class="stat-figure text-accent text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">📤</div>
-                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest">Active Borrows</div>
-                <div class="stat-value text-4xl font-extrabold mt-1 text-white">{{ $stats['active_borrows'] ?? 0 }}</div>
-                <div class="stat-desc text-accent font-semibold mt-2">Books currently out</div>
+                <div class="stat-figure mb-4">
+                    <img src="{{ asset('icons/active-borrow-icon.png') }}" alt="Active Borrows" class="w-20 h-20 mx-auto">
+                </div>
+                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest text-center">Active Borrows</div>
+                <div class="stat-value text-4xl font-extrabold mt-2 text-white text-center">{{ $stats['active_borrows'] ?? 0 }}</div>
             </div>
 
             <div class="glass-card p-8 group hover:-translate-y-2 transition-all duration-500">
-                <div class="stat-figure text-error text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">⚠️</div>
-                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest">Overdue Items</div>
-                <div class="stat-value text-4xl font-extrabold mt-1 text-white">{{ $stats['overdue_items'] ?? 0 }}</div>
-                <div class="stat-desc text-error font-semibold mt-2 hover:underline cursor-pointer">View overdue details</div>
+                <div class="stat-figure mb-4">
+                    <img src="{{ asset('icons/overdue-icon.png') }}" alt="Overdue" class="w-20 h-20 mx-auto">
+                </div>
+                <div class="stat-title text-white/60 text-xs font-bold uppercase tracking-widest text-center">Overdue Items</div>
+                <div class="stat-value text-4xl font-extrabold mt-2 text-white text-center">{{ $stats['overdue_items'] ?? 0 }}</div>
             </div>
         </div>
 
@@ -171,7 +169,7 @@
                 @endif
 
                 <div class="glass-card overflow-hidden">
-                    <div class="p-8 flex justify-between items-center border-b border-base-200">
+                    <div class="p-8 flex justify-between items-center border-b border-white/10">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -182,7 +180,7 @@
                     <div class="overflow-x-auto">
                         <table class="table table-lg">
                             <thead>
-                                <tr class="bg-base-200/30 text-white/70">
+                                <tr class="bg-white/5 text-white/70">
                                     <th class="py-4">Student</th>
                                     <th>Status</th>
                                     <th class="text-right">Action</th>
@@ -190,13 +188,17 @@
                             </thead>
                             <tbody>
                                 @forelse ($recentTransactions as $transaction)
-                                    <tr class="hover:bg-primary/5 transition-colors border-b border-base-200/50">
+                                    <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
                                         <td class="py-4">
                                             <div class="flex items-center gap-4">
-                                                <div class="avatar placeholder">
-                                                    <div class="bg-primary/10 text-primary rounded-xl w-10 font-bold">
-                                                        {{ substr($transaction->student->name, 0, 1) }}
-                                                    </div>
+                                                <div class="avatar shadow-sm border border-white/10 rounded-full overflow-hidden w-10 h-10">
+                                                    @if($transaction->student->profile_image)
+                                                        <img src="{{ $transaction->student->profile_image }}" class="w-full h-full object-cover">
+                                                    @else
+                                                        <div class="bg-primary text-primary-content w-full h-full flex items-center justify-center font-bold text-xs">
+                                                            {{ substr($transaction->student->name, 0, 1) }}
+                                                        </div>
+                                                    @endif
                                                 </div>
                                                 <div>
                                                     <div class="font-bold text-white">{{ $transaction->student->name }}</div>
@@ -214,7 +216,7 @@
                                             @endif
                                         </td>
                                         <td class="text-right">
-                                            <button @click="fetchDetails('{{ route('borrow-transactions.show', $transaction) }}')" class="btn btn-sm btn-ghost hover:bg-primary/20 hover:text-primary transition-all duration-300 rounded-lg group" title="View Details">
+                                            <button @click="fetchDetails('{{ route('borrow-transactions.show', $transaction) }}')" class="btn btn-sm btn-ghost hover:bg-primary/20 hover:text-primary text-white transition-all duration-300 rounded-lg group" title="View Details">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>

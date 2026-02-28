@@ -53,7 +53,10 @@
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
                 const html = await response.text();
-                document.getElementById('authors-grid-content').innerHTML = html;
+                const container = document.getElementById('authors-grid-content');
+                if (container) {
+                    container.innerHTML = html;
+                }
                 window.history.replaceState(null, null, `?search=${encodeURIComponent(this.search)}`);
             } catch (error) {
                 console.error('Search failed:', error);

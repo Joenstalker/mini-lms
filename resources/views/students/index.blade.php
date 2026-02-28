@@ -1,23 +1,6 @@
 <x-app-layout>
-    <div class="space-y-6" x-data="studentDirectory({ 
-        showCreateModal: {{ $errors->any() && !old('id') ? 'true' : 'false' }}, 
-        showEditModal: {{ $errors->any() && old('id') ? 'true' : 'false' }},
-        initialStudentId: {{ json_encode(old('student_id', '')) }},
-        initialEditData: { 
-            id: {{ json_encode(old('id', '')) }}, 
-            name: {{ json_encode(old('name', '')) }}, 
-            email: {{ json_encode(old('email', '')) }}, 
-            phone: {{ json_encode(old('phone', '')) }}, 
-            address: {{ json_encode(old('address', '')) }}, 
-            student_id: {{ json_encode(old('student_id', '')) }},
-            profile_image: {{ json_encode(old('profile_image', '')) }}
-        },
-        initialSearch: {{ json_encode($search ?? '') }},
-        initialFilter: {{ json_encode(request('filter') ?? '') }}
-    })">
-
     <script>
-        document.addEventListener('alpine:init', () => {
+        window._registerStudentDirectory = () => {
             Alpine.data('studentDirectory', (config) => ({
                 showCreateModal: config.showCreateModal,
                 showEditModal: config.showEditModal,
@@ -44,8 +27,6 @@
                         this.isLoading = false;
                     }
                 },
-
-
 
                 openEditModal(student) {
                     this.editData = { ...student };
@@ -79,10 +60,8 @@
                         });
                         const html = await response.text();
                         const container = document.getElementById('students-table-content');
-                        container.innerHTML = html;
-                        
-                        if (window.Alpine) {
-                            Alpine.process(container);
+                        if (container) {
+                            container.innerHTML = html;
                         }
                         
                         window.history.replaceState(null, null, `?${params.toString()}`);
@@ -185,8 +164,33 @@
                     this.performSearch();
                 }
             }));
-        });
+        };
+
+        // First page load: wait for alpine:init
+        document.addEventListener('alpine:init', window._registerStudentDirectory);
+        // Turbo Drive navigation: alpine:init won't fire again, register immediately
+        if (window.Alpine) window._registerStudentDirectory();
     </script>
+
+    <div class="space-y-6" x-data="studentDirectory({ 
+        showCreateModal: {{ $errors->any() && !old('id') ? 'true' : 'false' }}, 
+        showEditModal: {{ $errors->any() && old('id') ? 'true' : 'false' }},
+        initialStudentId: {{ json_encode(old('student_id', '')) }},
+        initialEditData: { 
+            id: {{ json_encode(old('id', '')) }}, 
+            name: {{ json_encode(old('name', '')) }}, 
+            email: {{ json_encode(old('email', '')) }}, 
+            phone: {{ json_encode(old('phone', '')) }}, 
+            address: {{ json_encode(old('address', '')) }}, 
+            student_id: {{ json_encode(old('student_id', '')) }},
+            profile_image: {{ json_encode(old('profile_image', '')) }}
+        },
+        initialSearch: {{ json_encode($search ?? '') }},
+        initialFilter: {{ json_encode(request('filter') ?? '') }}
+    })">
+
+
+
         <!-- Header -->
         <div class="glass text-white rounded-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-white/10">
             <div>
