@@ -24,8 +24,15 @@ class BorrowTransactionController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->whereHas('student', fn($sq) => $sq->where('name', 'like', "%{$search}%"))
-                  ->orWhereHas('book', fn($bq) => $bq->where('title', 'like', "%{$search}%"));
+                $q->whereHas('student', fn($sq) => 
+                    $sq->where('name', 'like', "%{$search}%")
+                       ->orWhere('student_id', 'like', "%{$search}%")
+                )
+                ->orWhereHas('book', fn($bq) => 
+                    $bq->where('title', 'like', "%{$search}%")
+                       ->orWhereHas('authors', fn($aq) => $aq->where('name', 'like', "%{$search}%"))
+                )
+                ->orWhere('status', 'like', "%{$search}%");
             });
         }
 

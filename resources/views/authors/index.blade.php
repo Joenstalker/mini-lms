@@ -84,9 +84,9 @@
                     <input 
                         type="text" 
                         x-model="search" 
-                        @input.debounce.500ms="performSearch()"
-                        placeholder="Search name or bio..." 
-                        class="input input-bordered w-full pl-12 bg-base-100/50 border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl h-14 transition-all"
+                        @input.debounce.150ms="performSearch()"
+                        placeholder="Search name or biography..." 
+                        class="input input-bordered w-full pl-12 bg-base-100/80 border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl h-14 transition-all text-slate-800 font-bold"
                     >
                     <button 
                         x-show="search.length > 0" 

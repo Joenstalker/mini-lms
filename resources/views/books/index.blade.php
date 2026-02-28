@@ -39,10 +39,10 @@
                             <input
                                 type="text"
                                 x-model="search"
-                                @input.debounce.500ms="performSearch()"
-                                placeholder="Search by title or author..."
-                                class="w-full pl-14 pr-12 py-4 rounded-2xl text-white placeholder-white/40 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all"
-                                style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(8px);"
+                                @input.debounce.150ms="performSearch()"
+                                placeholder="Search title, author, or publisher..."
+                                class="w-full pl-14 pr-12 py-4 rounded-2xl text-white placeholder-white/40 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all font-bold"
+                                style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); backdrop-filter: blur(8px);"
                             >
                             <button
                                 x-show="search.length > 0"
@@ -100,9 +100,9 @@
                     <input
                         type="text"
                         x-model="search"
-                        @input.debounce.500ms="performSearch()"
-                        placeholder="Search by title or author..."
-                        class="input input-bordered w-full pl-12 bg-base-100/50 border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl h-14 transition-all"
+                        @input.debounce.150ms="performSearch()"
+                        placeholder="Search title, author, or publisher..."
+                        class="input input-bordered w-full pl-12 bg-base-100/80 border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl h-14 transition-all text-slate-800 font-bold"
                     >
                     <button
                         x-show="search.length > 0"
@@ -980,61 +980,38 @@
                         });
                     },
 
-                    async syncTable() {
+                    async performSearch() {
                         this.isLoading = true;
-                        const url = new URL(window.location.href);
-                        if (this.search.length > 0) {
-                            url.searchParams.set('search', this.search);
-                        } else {
-                            url.searchParams.delete('search');
-                        }
-                        
-                        if (this.sort && this.sort !== 'newest') {
-                            url.searchParams.set('sort', this.sort);
-                        } else {
-                            url.searchParams.delete('sort');
-                        }
-                        
-                        if (this.filter && this.filter !== '') {
-                            url.searchParams.set('filter', this.filter);
-                        } else {
-                            url.searchParams.delete('filter');
-                        }
-
                         try {
-                            const response = await fetch(url.toString(), {
+                            const params = new URLSearchParams();
+                            if (this.search) params.set('search', this.search);
+                            if (this.sort && this.sort !== 'newest') params.set('sort', this.sort);
+                            if (this.filter) params.set('filter', this.filter);
+
+                            const response = await fetch(`{{ route('books.index') }}?${params.toString()}`, {
                                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
                             });
                             const html = await response.text();
-                            const parser = new DOMParser();
-                            const doc = parser.parseFromString(html, 'text/html');
-                            
-                            const newTable = doc.getElementById('books-table-content');
-                            const currentTable = document.getElementById('books-table-content');
-                            if (newTable && currentTable) {
-                                currentTable.innerHTML = newTable.innerHTML;
+                            const container = document.getElementById('books-table-content');
+                            if (container) {
+                                container.innerHTML = html;
                             }
-
-                            window.history.pushState({}, '', url.toString());
+                            window.history.replaceState(null, null, `?${params.toString()}`);
                         } catch (error) {
-                            console.error('Sync failed:', error);
+                            console.error('Search failed:', error);
                         } finally {
                             this.isLoading = false;
                         }
                     },
 
-                    async performSearch() {
-                        await this.syncTable();
-                    },
-                    
                     async updateSort(newSort) {
                         this.sort = newSort;
-                        await this.syncTable();
+                        await this.performSearch();
                     },
-                    
+
                     async updateFilter(newFilter) {
                         this.filter = newFilter;
-                        await this.syncTable();
+                        await this.performSearch();
                     }
                 }));
             });

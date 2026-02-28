@@ -142,6 +142,34 @@
                 <!-- SweetAlert2 Scripts -->
                 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                 <script>
+                    window.confirmLogout = function(event) {
+                        event.preventDefault();
+                        const form = event.target.closest('form');
+                        
+                        Swal.fire({
+                            title: 'Are You Sure You Want To Logout?',
+                            text: "You will be logged out of your session.",
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#fe5151',
+                            cancelButtonColor: 'transparent',
+                            confirmButtonText: 'Yes, Sign Out',
+                            cancelButtonText: 'Cancel',
+                            customClass: {
+                                popup: 'rounded-[2rem] bg-slate-900 text-white border border-white/10 shadow-2xl backdrop-blur-xl',
+                                title: 'text-2xl font-black text-white',
+                                htmlContainer: 'text-white/60',
+                                confirmButton: 'btn btn-error px-10 rounded-2xl font-bold',
+                                cancelButton: 'btn btn-ghost px-10 rounded-2xl font-bold text-white/40 hover:text-white'
+                            },
+                            buttonsStyling: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                    };
+
                     document.addEventListener('DOMContentLoaded', function() {
                         const Toast = Swal.mixin({
                             toast: true,

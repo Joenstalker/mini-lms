@@ -18,12 +18,13 @@ class AuthorController extends Controller
 
         $query = Author::with('books');
 
-        if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('bio', 'like', "%{$search}%");
+                  ->orWhere('bio', 'like', "%{$search}%")
+                  ->orWhereHas('books', function($bq) use ($search) {
+                      $bq->where('title', 'like', "%{$search}%");
+                  });
             });
-        }
 
         // Apply sorting - newest first by default
         switch ($sort) {
