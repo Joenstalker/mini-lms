@@ -71,14 +71,89 @@
                         this.isLoading = false;
                     }
                 },
+                
+                async confirmDelete(url) {
+                    const result = await Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this student profile!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ff5861',
+                        cancelButtonColor: '#355872',
+                        confirmButtonText: 'Yes, delete it!',
+                        background: '#1e293b',
+                        color: '#fff',
+                        customClass: {
+                            popup: 'rounded-[2rem] border border-white/10 shadow-3xl backdrop-blur-xl',
+                            confirmButton: 'rounded-xl',
+                            cancelButton: 'rounded-xl'
+                        }
+                    });
+
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await fetch(url, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                }
+                            });
+
+                            const data = await response.json();
+
+                            if (response.ok) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: data.message,
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    background: 'rgba(15, 23, 42, 0.95)',
+                                    color: '#fff'
+                                });
+                                await this.performSearch();
+                            } else {
+                                throw new Error(data.message || 'Deletion failed');
+                            }
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: error.message,
+                                background: '#1e293b',
+                                color: '#fff'
+                            });
+                        }
+                    }
+                },
 
                 async submitEdit(event) {
                     const form = event.target;
                     const formData = new FormData(form);
                     this.isLoading = true;
+                    
+                    Swal.fire({
+                        title: 'Updating Student...',
+                        text: 'Please wait while we finalize the profile.',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        customClass: {
+                            popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                            title: 'text-white font-bold',
+                        }
+                    });
 
                     try {
-                        const response = await fetch(form.action, {
+                        const delayPromise = new Promise(resolve => setTimeout(resolve, 3000));
+                        const responsePromise = fetch(form.action, {
                             method: 'POST',
                             body: formData,
                             headers: {
@@ -88,6 +163,7 @@
                             }
                         });
 
+                        const [response] = await Promise.all([responsePromise, delayPromise]);
                         const result = await response.json();
 
                         if (response.ok) {
@@ -108,7 +184,14 @@
                             throw new Error(errorMsg || 'Validation failed');
                         }
                     } catch (error) {
-                        Swal.fire({ icon: 'error', title: 'Update Failed', text: error.message, confirmButtonColor: '#355872' });
+                        Swal.fire({ 
+                            icon: 'error', 
+                            title: 'Update Failed', 
+                            text: error.message,
+                            customClass: {
+                                popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                            }
+                        });
                     } finally {
                         this.isLoading = false;
                     }
@@ -118,9 +201,24 @@
                     const form = event.target;
                     const formData = new FormData(form);
                     this.isLoading = true;
+                    
+                    Swal.fire({
+                        title: 'Creating Student...',
+                        text: 'Please wait while we finalize the profile.',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        customClass: {
+                            popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                            title: 'text-white font-bold',
+                        }
+                    });
 
                     try {
-                        const response = await fetch(form.action, {
+                        const delayPromise = new Promise(resolve => setTimeout(resolve, 3000));
+                        const responsePromise = fetch(form.action, {
                             method: 'POST',
                             body: formData,
                             headers: {
@@ -130,6 +228,7 @@
                             }
                         });
 
+                        const [response] = await Promise.all([responsePromise, delayPromise]);
                         const result = await response.json();
 
                         if (response.ok) {
@@ -153,7 +252,14 @@
                             throw new Error(errorMsg || 'Creation failed');
                         }
                     } catch (error) {
-                        Swal.fire({ icon: 'error', title: 'Registration Failed', text: error.message, confirmButtonColor: '#355872' });
+                        Swal.fire({ 
+                            icon: 'error', 
+                            title: 'Registration Failed', 
+                            text: error.message,
+                            customClass: {
+                                popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                            }
+                        });
                     } finally {
                         this.isLoading = false;
                     }
@@ -448,32 +554,7 @@
             </div>
         </template>
 
-        <script>
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.confirm-delete')) {
-                    const button = e.target.closest('.confirm-delete');
-                    const form = button.closest('form');
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: "You won't be able to revert this student profile!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ff5861',
-                        cancelButtonColor: '#355872',
-                        confirmButtonText: 'Yes, delete it!',
-                        customClass: {
-                            popup: 'rounded-2xl border-none shadow-2xl',
-                            confirmButton: 'rounded-xl',
-                            cancelButton: 'rounded-xl'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                }
-            });
-        </script>
+        </template>
 
     </div>
 </x-app-layout>

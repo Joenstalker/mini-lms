@@ -153,9 +153,17 @@ class StudentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Student $student)
+    public function destroy(Student $student, Request $request)
     {
         $student->delete();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Student deleted successfully.'
+            ]);
+        }
+
         return redirect()->route('students.index')->with('success', 'Student deleted successfully.');
     }
 }

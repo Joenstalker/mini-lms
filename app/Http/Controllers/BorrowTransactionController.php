@@ -20,46 +20,49 @@ class BorrowTransactionController extends Controller
         $sort   = $request->input('sort', 'newest');
         $filter = $request->input('filter');
 
-        $query = BorrowTransaction::with(['student', 'book']);
+        // We want to group by student to show one row per student who has/had transactions
+        $query = BorrowTransaction::select('student_id')
+            ->selectRaw('count(*) as total_count')
+            ->selectRaw('sum(case when status != \'returned\' then 1 else 0 end) as active_count')
+            ->selectRaw('sum(fine_amount) as total_fines')
+            ->selectRaw('max(created_at) as last_transaction_at')
+            ->with(['student'])
+            ->groupBy('student_id');
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('student', fn($sq) => 
-                    $sq->where('name', 'like', "%{$search}%")
-                       ->orWhere('student_id', 'like', "%{$search}%")
-                )
-                ->orWhereHas('book', fn($bq) => 
-                    $bq->where('title', 'like', "%{$search}%")
-                       ->orWhereHas('authors', fn($aq) => $aq->where('name', 'like', "%{$search}%"))
-                )
-                ->orWhere('status', 'like', "%{$search}%");
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('student_id', 'like', "%{$search}%");
             });
         }
 
-        match ($filter) {
-            'borrowed'           => $query->where('status', 'borrowed'),
-            'returned'           => $query->where('status', 'returned'),
-            'partially_returned' => $query->where('status', 'partially_returned'),
-            'overdue'            => $query->whereIn('status', ['borrowed', 'partially_returned'])
-                                          ->where('due_date', '<', now()),
-            default              => null,
-        };
+        if ($filter === 'overdue') {
+            $query->whereHas('student.borrowTransactions', function($q) {
+                $q->whereIn('status', ['borrowed', 'partially_returned'])
+                  ->where('due_date', '<', now());
+            });
+        } elseif ($filter === 'borrowed') {
+            $query->having('active_count', '>', 0);
+        } elseif ($filter === 'returned') {
+            // Show students who have at least one book fully returned
+            $query->whereHas('student.borrowTransactions', function($q) {
+                $q->where('status', 'returned');
+            });
+        }
 
         match ($sort) {
-            'oldest'   => $query->orderBy('created_at', 'asc'),
-            'due_asc'  => $query->orderBy('due_date', 'asc'),
-            'due_desc' => $query->orderBy('due_date', 'desc'),
-            default    => $query->orderBy('created_at', 'desc'),
+            'oldest' => $query->orderBy('last_transaction_at', 'asc'),
+            default  => $query->orderBy('last_transaction_at', 'desc'),
         };
 
         $perPage      = $request->input('per_page', 15);
-        $transactions = $query->paginate($perPage)->withQueryString();
+        $groupedTransactions = $query->paginate($perPage)->withQueryString();
 
         if ($request->ajax()) {
-            return view('borrow-transactions.partials.table', compact('transactions'))->render();
+            return view('borrow-transactions.partials.table', compact('groupedTransactions'))->render();
         }
 
-        return view('borrow-transactions.index', compact('transactions', 'search', 'sort', 'filter'));
+        return view('borrow-transactions.index', compact('groupedTransactions', 'search', 'sort', 'filter'));
     }
 
     /**
@@ -157,13 +160,16 @@ class BorrowTransactionController extends Controller
      */
     public function show(BorrowTransaction $borrowTransaction, Request $request)
     {
-        $borrowTransaction->load(['student', 'book']);
+        $student = $borrowTransaction->student;
+        $student->load(['borrowTransactions.book']);
+        
+        $borrowTransactions = $student->borrowTransactions()->orderBy('created_at', 'desc')->get();
 
         if ($request->ajax()) {
-            return view('borrow-transactions.partials.details', compact('borrowTransaction'))->render();
+            return view('borrow-transactions.partials.details', compact('student', 'borrowTransactions'))->render();
         }
 
-        return view('borrow-transactions.show', compact('borrowTransaction'));
+        return view('borrow-transactions.show', compact('student', 'borrowTransactions'));
     }
 
     /**
@@ -259,7 +265,7 @@ class BorrowTransactionController extends Controller
     /**
      * Delete a completed transaction.
      */
-    public function destroy(BorrowTransaction $borrowTransaction)
+    public function destroy(BorrowTransaction $borrowTransaction, Request $request)
     {
         // Restore inventory if the transaction is still active
         if ($borrowTransaction->status !== 'returned') {
@@ -273,9 +279,48 @@ class BorrowTransactionController extends Controller
 
         CacheService::invalidateDashboardCache();
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaction deleted successfully.'
+            ]);
+        }
+
         return redirect()
             ->route('borrow-transactions.index')
             ->with('success', 'Transaction deleted successfully.');
+    }
+
+    /**
+     * Delete all transactions for a specific student.
+     */
+    public function destroyGroup(Student $student, Request $request)
+    {
+        $transactions = $student->borrowTransactions;
+
+        foreach ($transactions as $transaction) {
+            // Restore inventory if the transaction is still active
+            if ($transaction->status !== 'returned') {
+                $unreturnedQuantity = $transaction->quantity_borrowed - $transaction->quantity_returned;
+                if ($unreturnedQuantity > 0) {
+                    $transaction->book->increment('available_quantity', $unreturnedQuantity);
+                }
+            }
+            $transaction->delete();
+        }
+
+        CacheService::invalidateDashboardCache();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'All transaction history for this student has been cleared.'
+            ]);
+        }
+
+        return redirect()
+            ->route('borrow-transactions.index')
+            ->with('success', 'Transaction history cleared successfully.');
     }
 
     /**

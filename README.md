@@ -103,5 +103,5 @@ This project implements:
 
 ---
 
-## 👤 Author
-Developed as part of the Laravel MVC Architecture evaluation.
+## 👤 Developers
+Joenil  -  Vash  -  Rayden  -  Christian  -  Kathryn

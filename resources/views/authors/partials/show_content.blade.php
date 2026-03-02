@@ -60,7 +60,7 @@
                 <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition-all group">
                     <div class="w-10 h-14 bg-white/5 rounded-lg overflow-hidden shrink-0 shadow-lg border border-white/10 group-hover:border-primary/50 transition-colors">
                         @if($book->cover_image)
-                            <img src="{{ asset('storage/' . $book->cover_image) }}" class="w-full h-full object-cover">
+                            <img src="{{ $book->cover_image_url }}" class="w-full h-full object-cover">
                         @else
                             <div class="w-full h-full flex items-center justify-center bg-primary/20 text-primary uppercase font-bold text-[8px]">No Cover</div>
                         @endif

@@ -55,10 +55,8 @@ class Student extends Model
         return $this->hasMany(BorrowTransaction::class);
     }
 
-    public function getOutstandingFineAttribute()
+    public function getTotalFinesAttribute()
     {
-        return $this->borrowTransactions()
-            ->whereIn('status', ['borrowed', 'partially_returned'])
-            ->sum('fine_amount');
+        return $this->borrowTransactions->sum(fn($bt) => $bt->total_fine);
     }
 }

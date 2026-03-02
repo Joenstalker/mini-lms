@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/borrow-transactions/{borrow_transaction}/edit', [BorrowTransactionController::class, 'edit'])->name('borrow-transactions.edit');
     Route::patch('/borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'update'])->name('borrow-transactions.update');
     Route::delete('/borrow-transactions/{borrow_transaction}', [BorrowTransactionController::class, 'destroy'])->name('borrow-transactions.destroy');
+    Route::delete('/borrow-transactions/student/{student}', [BorrowTransactionController::class, 'destroyGroup'])->name('borrow-transactions.destroy-group');
 });
 
 require __DIR__.'/auth.php';
