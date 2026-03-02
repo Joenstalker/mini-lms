@@ -18,7 +18,26 @@
                 </div>
             </div>
 
-            <form action="{{ route('borrow-transactions.store') }}" method="POST" class="space-y-6">
+            <form action="{{ route('borrow-transactions.store') }}" method="POST" class="space-y-6" x-data="{ 
+                loading: false,
+                submitForm() {
+                    this.loading = true;
+                    Swal.fire({
+                        title: 'Recording Borrow...',
+                        text: 'Please wait while we process the lending.',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        customClass: {
+                            popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                            title: 'text-white font-bold',
+                        }
+                    });
+                    this.$el.submit();
+                }
+            }" @submit.prevent="submitForm()">
                 @csrf
 
                 <div class="form-control">
@@ -80,7 +99,10 @@
 
                 <div class="flex gap-4 justify-end mt-8">
                     <a href="{{ route('borrow-transactions.index') }}" class="btn btn-outline">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Record Borrow</button>
+                    <button type="submit" class="btn btn-primary" :disabled="loading">
+                        <span x-show="!loading">Record Borrow</span>
+                        <span x-show="loading" class="loading loading-spinner loading-xs"></span>
+                    </button>
                 </div>
             </form>
         </div>

@@ -6,7 +6,16 @@ use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\BorrowTransactionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+
+// Error Page Testing Routes (Temporary) - Delete after testing
+Route::get('/test-error/{code}', function ($code) {
+    if (!in_array($code, [401, 402, 403, 404, 419, 500, 503])) {
+        abort(404);
+    }
+    abort($code);
+});
 
 // Root route: show the login page (welcome) for guests, redirect to dashboard for logged-in admins
 Route::get('/', function () {
@@ -21,6 +30,9 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Admin Users management
+    Route::resource('users', UserController::class)->only(['index', 'store', 'destroy']);
 
     // Profile management
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

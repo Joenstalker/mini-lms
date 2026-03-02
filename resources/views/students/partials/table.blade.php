@@ -26,7 +26,7 @@
                         <div class="flex items-center gap-4">
                             <div class="avatar shadow-lg border border-white/10 rounded-full overflow-hidden w-10 h-10">
                                 @if($student->profile_image)
-                                    <img src="{{ $student->profile_image }}" class="w-full h-full object-cover">
+                                    <img src="{{ Str::startsWith($student->profile_image, ['http', 'data:']) ? $student->profile_image : '/images/' . $student->profile_image }}" class="w-full h-full object-cover">
                                 @else
                                     <div class="bg-primary text-primary-content w-full h-full flex items-center justify-center font-bold">
                                         <span>{{ substr($student->name, 0, 1) }}</span>

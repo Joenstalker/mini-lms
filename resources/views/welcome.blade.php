@@ -179,15 +179,9 @@
                         </div>
                     @endif
 
-                    {{-- Validation Errors --}}
-                    @if ($errors->any())
-                        <div class="alert alert-error mb-4 bg-error/20 border-error/30 text-error text-sm py-3 px-4 rounded-xl">
-                            {{ $errors->first() }}
-                        </div>
-                    @endif
-
                     <form method="POST" action="{{ route('login') }}" class="space-y-4" onsubmit="showLoading('Signing you in...')">
                         @csrf
+
 
                         {{-- Email --}}
                         <div class="form-control">
@@ -244,5 +238,6 @@
         <script>
             document.documentElement.setAttribute('data-theme', 'dark');
         </script>
+        @include('partials.alerts')
     </body>
 </html>

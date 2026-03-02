@@ -18,7 +18,7 @@
                         <div class="flex items-center gap-3">
                             <div class="avatar shadow-sm border border-white/10 rounded-full overflow-hidden w-8 h-8">
                                 @if($transaction->student->profile_image)
-                                    <img src="{{ $transaction->student->profile_image }}" class="w-full h-full object-cover">
+                                    <img src="{{ Str::startsWith($transaction->student->profile_image, ['http', 'data:']) ? $transaction->student->profile_image : '/images/' . $transaction->student->profile_image }}" class="w-full h-full object-cover">
                                 @else
                                     <div class="bg-primary text-primary-content w-full h-full flex items-center justify-center font-bold text-xs">
                                         {{ substr($transaction->student->name, 0, 1) }}

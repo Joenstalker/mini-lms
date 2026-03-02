@@ -171,8 +171,7 @@
             </div>
         </div>
 
-        <script>
-            document.documentElement.setAttribute('data-theme', 'dark');
-        </script>
+        @include('partials.alerts')
+
     </body>
 </html>

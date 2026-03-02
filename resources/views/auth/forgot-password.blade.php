@@ -8,8 +8,6 @@
         </p>
     </div>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-6" :status="session('status')" />
 
     <form method="POST" action="{{ route('password.email') }}" class="space-y-6" onsubmit="showLoading('Sending reset link...')">
         @csrf
@@ -27,7 +25,7 @@
                     placeholder="name@example.com"
                     class="input input-bordered w-full pl-12 transition-all duration-300" />
             </div>
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+
         </div>
 
         <div class="pt-2 flex flex-col gap-3">

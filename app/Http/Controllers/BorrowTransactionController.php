@@ -81,19 +81,35 @@ class BorrowTransactionController extends Controller
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'borrow_date' => 'required|date',
+            'borrow_date' => 'nullable|date',
             'due_date' => 'required|date|after_or_equal:borrow_date',
-            'books' => 'required|array|min:1',
-            'books.*.id' => 'required|exists:books,id',
-            'books.*.quantity' => 'required|integer|min:1',
+            // Support both books array (bulk) OR single book_id/quantity
+            'books' => 'nullable|array',
+            'books.*.id' => 'required_with:books|exists:books,id',
+            'books.*.quantity' => 'required_with:books|integer|min:1',
+            'book_id' => 'required_without:books|exists:books,id',
+            'quantity_borrowed' => 'required_without:books|integer|min:1',
         ]);
 
         try {
             \DB::beginTransaction();
 
-            foreach ($validated['books'] as $bookData) {
-                $book = Book::findOrFail($bookData['id']);
-                $qty = (int)$bookData['quantity'];
+            $borrowDate = $validated['borrow_date'] ? Carbon::parse($validated['borrow_date']) : now();
+            $dueDate = Carbon::parse($validated['due_date'])->endOfDay();
+
+            // Normalize to a list of books to process
+            $booksToProcess = [];
+            if (!empty($validated['books'])) {
+                foreach ($validated['books'] as $b) {
+                    $booksToProcess[] = ['id' => $b['id'], 'qty' => (int)$b['quantity']];
+                }
+            } else {
+                $booksToProcess[] = ['id' => $validated['book_id'], 'qty' => (int)$validated['quantity_borrowed']];
+            }
+
+            foreach ($booksToProcess as $item) {
+                $book = Book::findOrFail($item['id']);
+                $qty = $item['qty'];
 
                 if ($book->available_quantity < $qty) {
                     throw new \Exception("Insufficient stock for '{$book->title}'. Only {$book->available_quantity} available.");
@@ -101,9 +117,9 @@ class BorrowTransactionController extends Controller
 
                 BorrowTransaction::create([
                     'student_id' => $validated['student_id'],
-                    'book_id' => $book['id'],
-                    'borrow_date' => Carbon::parse($validated['borrow_date']),
-                    'due_date' => Carbon::parse($validated['due_date'])->endOfDay(),
+                    'book_id' => $book->id,
+                    'borrow_date' => $borrowDate,
+                    'due_date' => $dueDate,
                     'quantity_borrowed' => $qty,
                     'quantity_returned' => 0,
                     'status' => 'borrowed',

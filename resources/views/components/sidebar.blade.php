@@ -30,6 +30,12 @@
             'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>',
             'purpose' => 'Handle borrowing logic'
         ],
+        [
+            'name' => 'Users',
+            'route' => 'users.index',
+            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>',
+            'purpose' => 'Manage admin accounts'
+        ],
     ];
 @endphp
 
@@ -42,9 +48,9 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-grow pb-4 overflow-x-hidden custom-scrollbar transition-all duration-300 overflow-y-auto px-4">
+    <nav class="flex-grow pb-4 overflow-y-auto no-scrollbar transition-all duration-300 px-4">
         <ul class="menu menu-md p-0 gap-1">
-            <li class="menu-title px-4 py-3 opacity-50 uppercase text-[10px] tracking-widest font-bold text-left">
+            <li class="menu-title px-4 py-2 opacity-50 uppercase text-[10px] tracking-widest font-bold text-left">
                 <span>Main Menu</span>
             </li>
             @foreach($navItems as $item)
@@ -53,7 +59,7 @@
                 @endphp
                 <li>
                     <a href="{{ route($item['route']) }}"
-                       class="flex items-center py-3 px-4 justify-start gap-4 rounded-xl transition-all duration-300 group">
+                       class="flex items-center py-2.5 px-4 justify-start gap-4 rounded-xl transition-all duration-300 group">
                         <div @class([
                             'transition-transform duration-300 group-hover:scale-110 flex-shrink-0 flex items-center justify-center',
                             'text-primary-content' => $isActive,

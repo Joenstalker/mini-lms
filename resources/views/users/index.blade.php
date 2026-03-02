@@ -1,0 +1,274 @@
+<x-app-layout>
+    <script>
+        window._registerUsersDirectory = () => {
+            Alpine.data('usersDirectory', (config) => ({
+                showCreateModal: config.showCreateModal,
+                search: config.initialSearch,
+                isLoading: false,
+                showPassword: false,
+                showConfirm: false,
+
+                async performSearch() {
+                    this.isLoading = true;
+                    try {
+                        const params = new URLSearchParams();
+                        if (this.search) params.set('search', this.search);
+                        const response = await fetch(`{{ route('users.index') }}?${params.toString()}`, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const html = await response.text();
+                        const container = document.getElementById('users-table-content');
+                        if (container) container.innerHTML = html;
+                        window.history.replaceState(null, null, `?${params.toString()}`);
+                    } catch (error) {
+                        console.error('Search failed:', error);
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                async submitCreate(event) {
+                    const form = event.target;
+                    const formData = new FormData(form);
+                    this.isLoading = true;
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            }
+                        });
+                        const result = await response.json();
+                        if (response.ok) {
+                            Swal.fire({
+                                icon: 'success', title: 'Created!', text: result.message,
+                                toast: true, position: 'top-end', showConfirmButton: false,
+                                timer: 3000, timerProgressBar: true
+                            });
+                            this.showCreateModal = false;
+                            form.reset();
+                            this.showPassword = false;
+                            this.showConfirm = false;
+                            await this.performSearch();
+                        } else {
+                            const errorMsg = result.errors
+                                ? Object.values(result.errors).flat().join('\n')
+                                : result.message;
+                            throw new Error(errorMsg || 'Creation failed');
+                        }
+                    } catch (error) {
+                        Swal.fire({ icon: 'error', title: 'Failed', text: error.message, confirmButtonColor: '#355872' });
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
+            }));
+        };
+
+        document.addEventListener('alpine:init', window._registerUsersDirectory);
+        if (window.Alpine) window._registerUsersDirectory();
+    </script>
+
+    <div class="space-y-6" x-data="usersDirectory({
+        showCreateModal: {{ $errors->any() ? 'true' : 'false' }},
+        initialSearch: {{ json_encode($search ?? '') }}
+    })">
+
+        <!-- Header -->
+        <div class="glass text-white rounded-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-white/10">
+            <div>
+                <h1 class="text-4xl font-bold">Admin Accounts</h1>
+                <p class="text-lg text-white/60 mt-2 font-medium">Manage all administrator accounts for this system</p>
+            </div>
+
+            <div class="flex-grow max-w-md w-full mx-0 md:mx-4">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <template x-if="!isLoading">
+                            <svg class="h-5 w-5 text-base-content/30 group-focus-within:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </template>
+                        <template x-if="isLoading">
+                            <span class="loading loading-spinner loading-xs text-primary"></span>
+                        </template>
+                    </div>
+                    <input
+                        type="text"
+                        x-model="search"
+                        @input.debounce.150ms="performSearch()"
+                        placeholder="Search by name or email..."
+                        class="input input-bordered w-full pl-12 bg-base-100/80 border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl h-14 transition-all text-slate-800 font-bold"
+                    >
+                </div>
+            </div>
+
+            <button @click="showCreateModal = true; showPassword = false; showConfirm = false" class="btn btn-primary btn-lg rounded-xl shadow-md transition-all shrink-0">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add Admin
+            </button>
+        </div>
+
+        <!-- Users Table -->
+        <div class="glass-card rounded-2xl shadow-xl border border-white/10 overflow-hidden">
+            <div class="p-8 flex items-center gap-3 border-b border-white/10">
+                <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">All Administrators</h3>
+                    <p class="text-xs text-white/50">{{ $users->count() }} {{ Str::plural('account', $users->count()) }}</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="table table-lg">
+                    <thead>
+                        <tr class="bg-white/5 text-white/70">
+                            <th class="py-4">Administrator</th>
+                            <th>Joined</th>
+                            <th class="text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-content">
+                        @include('users.partials.table')
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Create Admin Modal -->
+        <template x-teleport="body">
+            <div class="modal backdrop-blur-md" :class="{ 'modal-open': showCreateModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
+                <div class="modal-box max-w-xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 blur-[100px] rounded-full"></div>
+                    <div class="flex justify-between items-center p-8 pb-4 relative z-10 shrink-0 border-b border-white/5 bg-white/5 backdrop-blur-md">
+                        <div>
+                            <h3 class="text-2xl font-black tracking-tight">New Administrator</h3>
+                            <p class="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-bold">Create Admin Account</p>
+                        </div>
+                        <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
+                    </div>
+
+                    <form action="{{ route('users.store') }}" method="POST" @submit.prevent="submitCreate($event)" class="flex flex-col flex-grow overflow-hidden">
+                        @csrf
+                        <div class="flex-grow overflow-y-auto p-8 pt-6 space-y-4 scrollbar-thin relative z-10">
+
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Full Name</span></label>
+                                <input type="text" name="name" value="{{ old('name') }}"
+                                    class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white placeholder:text-white/20 transition-all font-bold"
+                                    required placeholder="Full Name">
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Email Address</span></label>
+                                <input type="email" name="email" value="{{ old('email') }}"
+                                    class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white placeholder:text-white/20 transition-all font-bold"
+                                    required placeholder="admin@example.com">
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Password</span></label>
+                                <div class="relative">
+                                    <input :type="showPassword ? 'text' : 'password'" name="password"
+                                        class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white placeholder:text-white/20 transition-all font-bold pr-12"
+                                        required placeholder="••••••••">
+                                    <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 pr-4 flex items-center text-white/30 hover:text-primary transition-colors">
+                                        <svg x-show="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <svg x-show="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Confirm Password</span></label>
+                                <div class="relative">
+                                    <input :type="showConfirm ? 'text' : 'password'" name="password_confirmation"
+                                        class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-xl h-12 text-white placeholder:text-white/20 transition-all font-bold pr-12"
+                                        required placeholder="••••••••">
+                                    <button type="button" @click="showConfirm = !showConfirm" class="absolute inset-y-0 right-0 pr-4 flex items-center text-white/30 hover:text-primary transition-colors">
+                                        <svg x-show="!showConfirm" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <svg x-show="showConfirm" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
+                            <button type="button" @click="showCreateModal = false" :disabled="isLoading" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all">Cancel</button>
+                            <button type="submit" :disabled="isLoading" class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:scale-105 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-primary/20 transition-all duration-300">
+                                <span x-show="isLoading" class="loading loading-spinner loading-xs"></span>
+                                <span x-show="!isLoading">Create Admin</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+
+        <script>
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.confirm-delete-user')) {
+                    const button = e.target.closest('.confirm-delete-user');
+                    const form = button.closest('form');
+                    Swal.fire({
+                        title: 'Remove Admin Account?',
+                        text: "This admin will lose access to the system immediately.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ff5861',
+                        cancelButtonColor: '#355872',
+                        confirmButtonText: 'Yes, remove them!',
+                        customClass: {
+                            popup: 'rounded-2xl border-none shadow-2xl',
+                            confirmButton: 'rounded-xl',
+                            cancelButton: 'rounded-xl'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const formData = new FormData(form);
+                            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                            fetch(form.action, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken
+                                }
+                            })
+                            .then(async (res) => {
+                                const data = await res.json();
+                                if (res.ok) {
+                                    Swal.fire({
+                                        icon: 'success', title: 'Removed!', text: data.message,
+                                        toast: true, position: 'top-end', showConfirmButton: false,
+                                        timer: 3000, timerProgressBar: true
+                                    });
+                                    const container = document.getElementById('users-table-content');
+                                    if (container) {
+                                        const params = new URLSearchParams(window.location.search);
+                                        fetch(`{{ route('users.index') }}?${params.toString()}`, {
+                                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                        }).then(r => r.text()).then(html => { container.innerHTML = html; });
+                                    }
+                                } else {
+                                    Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                                }
+                            })
+                            .catch(() => Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong.' }));
+                        }
+                    });
+                }
+            });
+        </script>
+
+    </div>
+</x-app-layout>

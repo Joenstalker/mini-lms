@@ -7,12 +7,6 @@
         </p>
     </div>
 
-    @if (session('status') == 'verification-link-sent')
-        <div class="alert alert-success glass mb-6 border-l-4 border-success">
-            <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span class="text-sm font-medium">{{ __('A new verification link has been sent to your email.') }}</span>
-        </div>
-    @endif
 
     <div class="space-y-4">
         <form method="POST" action="{{ route('verification.send') }}">

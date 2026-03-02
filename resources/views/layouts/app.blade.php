@@ -86,7 +86,21 @@
                     padding: 2.5rem !important;
                 }
             }
+
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+
+            /* Hide scrollbar for IE, Edge and Firefox */
+            .no-scrollbar {
+                -ms-overflow-style: none;  /* IE and Edge */
+                scrollbar-width: none;  /* Firefox */
+            }
         </style>
+
+        <!-- SweetAlert2 -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -147,124 +161,8 @@
                     </turbo-frame>
                 </main>
 
-                <!-- SweetAlert2 Scripts -->
-                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-                <script>
-                    window.confirmLogout = function(event) {
-                        event.preventDefault();
-                        const form = event.target.closest('form');
-                        
-                        Swal.fire({
-                            title: 'Are You Sure You Want To Logout?',
-                            text: "You will be logged out of your session.",
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonColor: '#fe5151',
-                            cancelButtonColor: 'transparent',
-                            confirmButtonText: 'Yes, Sign Out',
-                            cancelButtonText: 'Cancel',
-                            backdrop: 'rgba(0,0,0,0.5)',
-                            customClass: {
-                                popup: 'rounded-[2rem] border border-white/10 shadow-2xl',
-                                title: 'text-2xl font-black text-white',
-                                htmlContainer: 'text-white/60',
-                                confirmButton: 'btn btn-error px-10 rounded-2xl font-bold',
-                                cancelButton: 'btn btn-ghost px-10 rounded-2xl font-bold text-white/40 hover:text-white'
-                            },
-                            didOpen: () => {
-                                // Apply glass styling to the popup
-                                const popup = Swal.getPopup();
-                                popup.style.background = 'rgba(15, 23, 42, 0.6)';
-                                popup.style.backdropFilter = 'blur(20px)';
-                                popup.style.webkitBackdropFilter = 'blur(20px)';
-                                popup.style.border = '1px solid rgba(255,255,255,0.1)';
+                @include('partials.alerts')
 
-                                // Blur the Swal backdrop
-                                const backdrop = document.querySelector('.swal2-backdrop-show');
-                                if (backdrop) {
-                                    backdrop.style.backdropFilter = 'blur(8px)';
-                                    backdrop.style.webkitBackdropFilter = 'blur(8px)';
-                                }
-                            },
-                            buttonsStyling: false
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                form.submit();
-                            }
-                        });
-                    };
-
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true,
-                            didOpen: (toast) => {
-                                toast.addEventListener('mouseenter', Swal.stopTimer)
-                                toast.addEventListener('mouseleave', Swal.resumeTimer)
-                            }
-                        });
-
-                        @if (session('success'))
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: "{{ session('success') }}",
-                                confirmButtonColor: '#355872',
-                                border: 'none',
-                                customClass: {
-                                    popup: 'rounded-[1.5rem] bg-slate-900 text-white border border-white/10 shadow-3xl',
-                                    title: 'text-2xl font-bold text-white',
-                                    confirmButton: 'btn btn-primary px-8 rounded-xl'
-                                },
-                                buttonsStyling: false
-                            });
-                        @endif
-
-                        @if (session('success_message'))
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Welcome!',
-                                text: "{{ session('success_message') }}",
-                                confirmButtonColor: '#355872',
-                                border: 'none',
-                                customClass: {
-                                    popup: 'rounded-[1.5rem] bg-slate-900 text-white border border-white/10 shadow-3xl',
-                                    title: 'text-2xl font-bold text-white',
-                                    confirmButton: 'btn btn-primary px-8 rounded-xl'
-                                },
-                                buttonsStyling: false
-                            });
-                        @endif
-
-                        @if (session('status'))
-                            Toast.fire({
-                                icon: 'info',
-                                title: "{{ session('status') }}"
-                            });
-                        @endif
-
-                        @if (session('error'))
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: "{{ session('error') }}",
-                                confirmButtonColor: '#355872'
-                            });
-                        @endif
-
-                        @if ($errors->any())
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Validation Error',
-                                html: '<ul class="text-left text-sm space-y-1">@foreach ($errors->all() as $error)<li>• {{ $error }}</li>@endforeach</ul>',
-                                confirmButtonColor: '#355872'
-                            });
-                        @endif
-                    });
-                </script>
 
                 <!-- Footer -->
                 <footer class="bg-base-200/50 backdrop-blur-sm border-t border-base-200 pt-16 pb-8">
@@ -380,5 +278,6 @@
             </div>
         </footer>
         @endauth
+
     </body>
 </html>

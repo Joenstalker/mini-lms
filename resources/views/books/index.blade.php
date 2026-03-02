@@ -184,7 +184,7 @@
                     {{-- Book Cover --}}
                     <div class="relative aspect-[3/4] overflow-hidden bg-base-200">
                         <img
-                            src="{{ $book->cover_image ? (Str::startsWith($book->cover_image, 'http') ? $book->cover_image : '/images/' . $book->cover_image) : '/images/default-book-cover.png' }}"
+                            src="{{ $book->cover_image ? (Str::startsWith($book->cover_image, ['http', 'data:']) ? $book->cover_image : '/images/' . $book->cover_image) : '/images/default-book-cover.png' }}"
                             alt="{{ $book->title }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         >
@@ -273,7 +273,7 @@
                                     <td>
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-16 rounded-lg bg-base-300 flex-shrink-0 overflow-hidden shadow-sm border border-base-content/5">
-                                                <img src="{{ $book->cover_image ? (Str::startsWith($book->cover_image, 'http') ? $book->cover_image : '/images/' . $book->cover_image) : '/images/default-book-cover.png' }}" class="w-full h-full object-cover">
+                                                <img src="{{ $book->cover_image ? (Str::startsWith($book->cover_image, ['http', 'data:']) ? $book->cover_image : '/images/' . $book->cover_image) : '/images/default-book-cover.png' }}" class="w-full h-full object-cover">
                                             </div>
                                             <div>
                                                 <div class="font-bold text-base text-white">{{ $book->title }}</div>
@@ -379,7 +379,7 @@
                         
                         <!-- Full Width Title -->
                         <div class="form-control relative z-10">
-                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Title</span></label>
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Title *</span></label>
                             <input type="text" name="title" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-2xl h-16 text-xl font-bold text-white transition-all placeholder:text-white/20" required placeholder="Enter the grand title...">
                         </div>
 
@@ -413,33 +413,34 @@
 
                             <!-- Right Side: Grid of Info -->
                             <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                                <div class="form-control sm:col-span-2">
-                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Publisher</span></label>
-                                    <input type="text" name="publisher" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white placeholder:text-white/20" placeholder="e.g. Penguin Books">
+                                 <div class="form-control">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Publisher *</span></label>
+                                    <input type="text" name="publisher" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white placeholder:text-white/20" required placeholder="e.g. Penguin Books">
                                 </div>
 
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Published Year</span></label>
-                                    <input type="number" name="published_year" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white" placeholder="{{ date('Y') }}">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Published Year *</span></label>
+                                    <input type="number" name="published_year" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white" required placeholder="{{ date('Y') }}" min="1900" max="{{ date('Y') }}">
                                 </div>
                                 
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Total Quantity</span></label>
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Total Quantity *</span></label>
                                     <input type="number" name="total_quantity" class="input bg-white/5 border-white/10 focus:border-primary/50 rounded-xl h-12 text-white font-bold" required min="1" value="1">
                                 </div>
 
                                 <div class="form-control sm:col-span-2" x-data="{ open: false, selectedAuthors: [] }">
-                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Authors Information</span></label>
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Authors Information *</span></label>
                                     <div class="relative">
                                         <button type="button" @click="open = !open" class="input input-bordered w-full flex items-center justify-between bg-white/5 border-white/10 rounded-xl text-sm px-4 h-12 hover:bg-white/10 transition-colors">
-                                            <span x-text="selectedAuthors.length ? selectedAuthors.length + ' authors selected' : 'Assign authors...'" class="font-medium text-white/80"></span>
+                                            <span x-text="selectedAuthors.length ? selectedAuthors.length + ' authors selected' : 'Assign authors...'" class="font-medium" :class="selectedAuthors.length ? 'text-white' : 'text-white/40'"></span>
                                             <svg class="w-4 h-4 text-white/40 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                                         </button>
+                                        <input type="hidden" name="authors_placeholder" :required="selectedAuthors.length === 0">
                                         <div x-show="open" @click.away="open = false" 
                                              x-transition:enter="transition ease-out duration-200"
                                              x-transition:enter-start="opacity-0 translate-y-2"
                                              x-transition:enter-end="opacity-100 translate-y-0"
-                                             class="absolute z-[60] w-full mt-2 glass-card rounded-2xl shadow-2xl max-h-60 overflow-y-auto p-2 scrollbar-thin border border-white/10">
+                                              class="absolute z-[60] w-full mt-2 glass-card rounded-2xl shadow-2xl max-h-60 overflow-y-auto p-2 scrollbar-thin border border-white/10">
                                             @foreach (\App\Models\Author::all() as $author)
                                                 <label class="flex items-center gap-3 p-3 hover:bg-white/10 rounded-xl cursor-pointer transition-colors group">
                                                     <input type="checkbox" name="authors[]" value="{{ $author->id }}" x-model="selectedAuthors" class="checkbox checkbox-primary checkbox-sm border-white/20 rounded-md">
@@ -448,6 +449,9 @@
                                             @endforeach
                                         </div>
                                     </div>
+                                    <template x-if="selectedAuthors.length === 0">
+                                        <span class="text-[10px] text-error mt-1">Please select at least one author.</span>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -463,14 +467,10 @@
                         {{-- Fixed Action Footer --}}
                         <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
                             <button type="button" @click="showCreateModal = false" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all" :disabled="loading">Discard</button>
-                            <button type="submit" class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:scale-105 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-primary/20 transition-all duration-300" :class="{ 'loading': loading }" :disabled="loading">
-                                <span x-show="!loading" class="flex items-center gap-2">
+                            <button type="submit" class="btn border-none bg-gradient-to-r from-primary to-primary-focus hover:scale-105 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-primary/20 transition-all duration-300" :disabled="loading">
+                                <span class="flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/></svg>
                                     Create Book Entry
-                                </span>
-                                <span x-show="loading" class="flex items-center gap-2">
-                                    <span class="loading loading-spinner loading-xs"></span>
-                                    Creating...
                                 </span>
                             </button>
                         </div>
@@ -504,7 +504,7 @@
                         
                         <!-- Full Width Title -->
                         <div class="form-control relative z-10">
-                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Title</span></label>
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Title *</span></label>
                             <input type="text" name="title" x-model="editData.title" class="input w-full bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-2xl h-16 text-xl font-bold text-white transition-all placeholder:text-white/20" required placeholder="Enter the grand title...">
                         </div>
 
@@ -538,26 +538,26 @@
 
                             <!-- Right Side: Grid of Info -->
                             <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                                <div class="form-control sm:col-span-2">
-                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Publisher</span></label>
-                                    <input type="text" name="publisher" x-model="editData.publisher" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white placeholder:text-white/20">
+                                <div class="form-control">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Publisher *</span></label>
+                                    <input type="text" name="publisher" x-model="editData.publisher" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white placeholder:text-white/20" required placeholder="e.g. Penguin Books">
                                 </div>
 
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Published Year</span></label>
-                                    <input type="number" name="published_year" x-model="editData.published_year" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white">
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Published Year *</span></label>
+                                    <input type="number" name="published_year" x-model="editData.published_year" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white" required placeholder="{{ date('Y') }}" min="1900" max="{{ date('Y') }}">
                                 </div>
                                 
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Total Quantity</span></label>
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Total Quantity *</span></label>
                                     <input type="number" name="total_quantity" x-model="editData.total_quantity" class="input bg-white/5 border-white/10 focus:border-warning/50 rounded-xl h-12 text-white font-bold" required min="1">
                                 </div>
 
                                 <div class="form-control sm:col-span-2" x-data="{ open: false }">
-                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Authors Information</span></label>
+                                    <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Authors Information *</span></label>
                                     <div class="relative">
                                         <button type="button" @click="open = !open" class="input input-bordered w-full flex items-center justify-between bg-white/5 border-white/10 rounded-xl text-sm px-4 h-12 hover:bg-white/10 transition-colors">
-                                            <span x-text="editData.authors.length ? editData.authors.length + ' authors selected' : 'Assign authors...'" class="font-medium text-white/80"></span>
+                                            <span x-text="editData.authors.length ? editData.authors.length + ' authors selected' : 'Assign authors...'" class="font-medium" :class="editData.authors.length ? 'text-white' : 'text-white/40'"></span>
                                             <svg class="w-4 h-4 text-white/40 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                                         </button>
                                         <div x-show="open" @click.away="open = false" 
@@ -573,29 +573,28 @@
                                             @endforeach
                                         </div>
                                     </div>
+                                    <template x-if="editData.authors.length === 0">
+                                        <span class="text-[10px] text-error mt-1">Please select at least one author.</span>
+                                    </template>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Description - Widened -->
                         <div class="form-control relative z-10">
-                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Description & Summary</span></label>
+                            <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Book Description & Summary (Optional)</span></label>
                             <textarea name="description" x-model="editData.description" class="textarea bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-2xl h-40 leading-relaxed text-sm py-4 text-white placeholder:text-white/20 transition-all" placeholder="Update the story..."></textarea>
                         </div>
 
                         </div> {{-- End Scrollable Content Body --}}
-
+                        
                         {{-- Fixed Action Footer --}}
                         <div class="modal-action border-t border-white/10 p-8 pt-6 relative z-10 shrink-0 bg-white/5 backdrop-blur-md mt-0">
                             <button type="button" @click="showEditModal = false" class="btn btn-ghost rounded-xl px-8 text-white/40 hover:text-white hover:bg-white/5 transition-all" :disabled="loading">Discard</button>
-                            <button type="submit" class="btn border-none bg-gradient-to-r from-warning to-warning-focus hover:scale-105 active:scale-95 text-warning-content font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-warning/20 transition-all duration-300" :class="{ 'loading': loading }" :disabled="loading">
-                                <span x-show="!loading" class="flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-                                    Update Book Data
-                                </span>
-                                <span x-show="loading" class="flex items-center gap-2">
-                                    <span class="loading loading-spinner loading-xs"></span>
-                                    Updating...
+                            <button type="submit" class="btn border-none bg-gradient-to-r from-warning to-warning-focus hover:scale-105 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] rounded-xl px-12 h-12 shadow-xl shadow-warning/20 transition-all duration-300" :disabled="loading">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/></svg>
+                                    Update Book Entry
                                 </span>
                             </button>
                         </div>
@@ -606,11 +605,12 @@
 
         <template x-teleport="body">
             <!-- Details Modal -->
-            <div class="modal modal-bottom sm:modal-middle backdrop-blur-md" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
-                <div class="modal-box w-full max-w-2xl glass text-white rounded-t-[2.5rem] sm:rounded-[2.5rem] p-0 border border-white/10 shadow-3xl overflow-hidden flex flex-col max-h-[90vh] relative">
+            <div class="modal backdrop-blur-md" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">
+                <div class="modal-box max-w-3xl max-h-[90vh] glass text-white rounded-[2.5rem] p-0 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col">
                     {{-- Decorative background glow --}}
                     <div class="absolute -top-24 -right-24 w-48 h-48 bg-info/10 blur-[100px] rounded-full"></div>
-
+                    
+                    {{-- Fixed Header --}}
                     <div class="bg-info/20 p-6 sm:p-8 flex justify-between items-center text-white shrink-0 backdrop-blur-md border-b border-white/10 relative z-10">
                         <div class="flex items-center gap-4">
                             <div class="w-10 h-10 sm:w-12 sm:h-12 bg-info/20 rounded-2xl flex items-center justify-center border border-info/30">
@@ -714,7 +714,7 @@
                             <button @click="showBorrowModal = false" class="btn btn-sm btn-circle btn-ghost text-white">✕</button>
                         </div>
 
-                        <form action="{{ route('borrow-transactions.store') }}" method="POST" class="flex flex-col flex-grow overflow-hidden">
+                        <form action="{{ route('borrow-transactions.store') }}" method="POST" @submit.prevent="submitBorrow()" class="flex flex-col flex-grow overflow-hidden">
                             @csrf
                             <input type="hidden" name="book_id" :value="borrowData.id">
                             <input type="hidden" name="book_title" :value="borrowData.title">
@@ -772,10 +772,9 @@
                                 </div>
 
                                 <div class="form-control">
-                                    <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Personal PIN *</span></label>
-                                    <input type="password" name="pin" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl @error('pin') border-error @enderror" required placeholder="••••" minlength="4" maxlength="6">
-                                    <label class="label"><span class="label-text-alt opacity-50 text-[10px] sm:text-xs text-info">Enter your 4-6 digit security PIN</span></label>
-                                    @error('pin') <span class="text-error text-[10px] mt-1">{{ $message }}</span> @enderror
+                                    <label class="label"><span class="label-text font-bold text-[10px] uppercase tracking-widest opacity-60">Library Search *</span></label>
+                                    <input type="text" class="input input-bordered focus:input-primary bg-base-200 border-base-300 rounded-xl" required placeholder="Confiming library presence..." readonly value="Counter verification active">
+                                    <label class="label"><span class="label-text-alt opacity-50 text-[10px] sm:text-xs text-info">Internal verification is processed at the counter</span></label>
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -882,7 +881,35 @@
 
                     async submitCreate() {
                         this.loading = true;
+                        
+                        Swal.fire({
+                            title: 'Saving Book...',
+                            text: 'Please wait while we update the catalog.',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            },
+                            customClass: {
+                                popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                                title: 'text-white font-bold',
+                            }
+                        });
+
                         const formData = new FormData(this.$event.target);
+                        const authors = formData.getAll('authors[]');
+                        
+                        if (authors.length === 0) {
+                            this.loading = false;
+                            Swal.close();
+                            Swal.fire({ 
+                                icon: 'warning', 
+                                title: 'Authors Required', 
+                                text: 'Please select at least one author for this book.',
+                                customClass: { popup: 'rounded-2xl' }
+                            });
+                            return;
+                        }
                         
                         try {
                             const response = await fetch('{{ route('books.store') }}', {
@@ -896,7 +923,7 @@
                                 this.showCreateModal = false;
                                 this.$event.target.reset();
                                 this.createImagePreview = '';
-                                await this.syncTable();
+                                await this.performSearch();
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Success!',
@@ -917,7 +944,35 @@
 
                     async submitEdit() {
                         this.loading = true;
+
+                        Swal.fire({
+                            title: 'Updating Catalog...',
+                            text: 'Applying changes to the book record.',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            },
+                            customClass: {
+                                popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                                title: 'text-white font-bold',
+                            }
+                        });
+
                         const formData = new FormData(this.$event.target);
+                        const authors = formData.getAll('authors[]');
+                        
+                        if (authors.length === 0) {
+                            this.loading = false;
+                            Swal.close();
+                            Swal.fire({ 
+                                icon: 'warning', 
+                                title: 'Authors Required', 
+                                text: 'Please select at least one author for this book.',
+                                customClass: { popup: 'rounded-2xl' }
+                            });
+                            return;
+                        }
                         
                         try {
                             const response = await fetch(`{{ url('books') }}/${this.editData.id}`, {
@@ -929,7 +984,7 @@
                             
                             if (result.success) {
                                 this.showEditModal = false;
-                                await this.syncTable();
+                                await this.performSearch();
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Updated!',
@@ -970,7 +1025,7 @@
                                     });
                                     const res = await response.json();
                                     if (res.success) {
-                                        await this.syncTable();
+                                        await this.performSearch();
                                         Swal.fire({ icon: 'success', title: 'Deleted!', text: res.message, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
                                     }
                                 } catch (error) {
@@ -978,6 +1033,62 @@
                                 }
                             }
                         });
+                    },
+
+                    async submitBorrow() {
+                        this.loading = true;
+
+                        Swal.fire({
+                            title: 'Processing Transaction...',
+                            text: 'Updating library records and stock.',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            },
+                            customClass: {
+                                popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                                title: 'text-white font-bold',
+                            }
+                        });
+
+                        const formData = new FormData(this.$event.target);
+                        
+                        try {
+                            const response = await fetch('{{ route('borrow-transactions.store') }}', {
+                                method: 'POST',
+                                body: formData,
+                                headers: { 
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json'
+                                }
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                this.showBorrowModal = false;
+                                this.selectedStudent = null;
+                                this.studentSearch = '';
+                                await this.performSearch();
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Borrowed!',
+                                    text: result.message,
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                });
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Oops...', text: result.message || 'Something went wrong.' });
+                            }
+                        } catch (error) {
+                            console.error('Borrow failed:', error);
+                            Swal.fire({ icon: 'error', title: 'Error', text: 'Transaction failed. Please try again.' });
+                        } finally {
+                            this.loading = false;
+                        }
                     },
 
                     async performSearch() {
