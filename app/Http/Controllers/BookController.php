@@ -128,21 +128,28 @@ class BookController extends Controller
      */
     public function update(Request $request, Book $book)
     {
+        $borrowedCount = $book->total_quantity - $book->available_quantity;
+        
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'total_quantity' => 'required|integer|min:1',
+            'total_quantity' => "required|integer|min:$borrowedCount",
             'publisher' => 'required|string|max:255',
             'published_year' => 'required|integer|min:1900|max:' . date('Y'),
             'authors' => 'required|array|min:1',
             'authors.*' => 'exists:authors,id',
             'cover_image' => 'nullable|string',
+        ], [
+            'total_quantity.min' => "The total quantity cannot be less than the number of books currently borrowed ($borrowedCount)."
         ]);
+
+        $quantityChange = $validated['total_quantity'] - $book->total_quantity;
 
         $book->update([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'total_quantity' => $validated['total_quantity'],
+            'available_quantity' => $book->available_quantity + $quantityChange,
             'publisher' => $validated['publisher'] ?? null,
             'published_year' => $validated['published_year'] ?? null,
             'cover_image' => $validated['cover_image'] ?? null,

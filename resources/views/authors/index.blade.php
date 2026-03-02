@@ -63,6 +63,73 @@
             } finally {
                 this.isLoading = false;
             }
+        },
+        async submitAuthor(event, type) {
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            Swal.fire({
+                title: type === 'create' ? 'Creating Author...' : 'Updating Author...',
+                text: 'Please wait while we finalize the profile.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                customClass: {
+                    popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                    title: 'text-white font-bold',
+                }
+            });
+
+            const startTime = Date.now();
+            
+            try {
+                // Minimum 3 seconds delay as requested by user
+                const delayPromise = new Promise(resolve => setTimeout(resolve, 3000));
+                
+                const responsePromise = fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                const [response] = await Promise.all([responsePromise, delayPromise]);
+                const result = await response.json();
+
+                if (result.success) {
+                    if (type === 'create') this.showCreateModal = false;
+                    else this.showEditModal = false;
+                    
+                    await this.performSearch();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: result.message,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                } else {
+                    throw new Error(result.message || 'Something went wrong');
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Submission Failed',
+                    text: error.message,
+                    customClass: {
+                        popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                    }
+                });
+            }
         }
     }">
         <!-- Header -->
@@ -132,7 +199,7 @@
                         <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                     </div>
 
-                    <form action="{{ route('authors.store') }}" method="POST" class="flex flex-col flex-grow overflow-hidden">
+                    <form action="{{ route('authors.store') }}" method="POST" @submit.prevent="submitAuthor($event, 'create')" class="flex flex-col flex-grow overflow-hidden">
                         @csrf
                         <input type="hidden" name="profile_image" x-model="imagePreview">
                         
@@ -200,7 +267,7 @@
                         <button @click="showEditModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                     </div>
 
-                    <form :action="'{{ url('authors') }}/' + editData.id" method="POST" class="flex flex-col flex-grow overflow-hidden">
+                    <form :action="'{{ url('authors') }}/' + editData.id" method="POST" @submit.prevent="submitAuthor($event, 'edit')" class="flex flex-col flex-grow overflow-hidden">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="profile_image" x-model="editData.profile_image">
@@ -290,11 +357,12 @@
         </template>
 
         <script>
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', async function(e) {
                 if (e.target.closest('.confirm-delete')) {
                     const button = e.target.closest('.confirm-delete');
                     const form = button.closest('form');
-                    Swal.fire({
+                    
+                    const { isConfirmed } = await Swal.fire({
                         title: 'Are you sure?',
                         text: "All books by this author will remain, but the author profile will be removed!",
                         icon: 'warning',
@@ -303,15 +371,59 @@
                         cancelButtonColor: '#355872',
                         confirmButtonText: 'Yes, delete author!',
                         customClass: {
-                            popup: 'rounded-2xl border-none shadow-2xl',
+                            popup: 'rounded-2xl border-none shadow-2xl bg-slate-900/95 backdrop-blur-xl text-white border border-white/10',
                             confirmButton: 'rounded-xl',
                             cancelButton: 'rounded-xl'
                         }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
                     });
+
+                    if (isConfirmed) {
+                        try {
+                            Swal.fire({
+                                title: 'Deleting Author...',
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading(),
+                                customClass: {
+                                    popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+                                }
+                            });
+
+                            const response = await fetch(form.action, {
+                                method: 'POST',
+                                body: new FormData(form),
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                }
+                            });
+
+                            const result = await response.json();
+                            if (result.success) {
+                                // Find the Alpine component to call performSearch
+                                const alpineData = Alpine.$data(document.querySelector('[x-data]'));
+                                if (alpineData) await alpineData.performSearch();
+                                
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: result.message,
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                });
+                            } else {
+                                throw new Error(result.message);
+                            }
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: error.message
+                            });
+                        }
+                    }
                 }
             });
         </script>

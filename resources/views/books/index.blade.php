@@ -312,7 +312,7 @@
                                                     'total_quantity' => $book->total_quantity,
                                                     'available_quantity' => $book->available_quantity,
                                                     'description' => $book->description,
-                                                    'cover_image' => $book->cover_image,
+                                                    'cover_image' => $book->cover_image_url,
                                                     'authors' => $book->authors->map(fn($a) => ['id' => $a->id, 'name' => $a->name])
                                                 ]);
                                             @endphp
@@ -371,7 +371,7 @@
                         <button @click="showCreateModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                     </div>
 
-                    <form @submit.prevent="submitCreate()" class="flex flex-col flex-grow overflow-hidden" x-data="{ loading: false }">
+                    <form @submit.prevent="submitCreate($event)" class="flex flex-col flex-grow overflow-hidden" x-data="{ loading: false }">
                         @csrf
                         
                         {{-- Scrollable Content Body --}}
@@ -383,7 +383,7 @@
                             <input type="text" name="title" class="input w-full bg-white/5 border-white/10 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-2xl h-16 text-xl font-bold text-white transition-all placeholder:text-white/20" required placeholder="Enter the grand title...">
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-20">
                             <!-- Left Side: Image Upload & Preview -->
                             <div class="md:col-span-2 group">
                                 <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Cover Image</span></label>
@@ -495,7 +495,7 @@
                         <button @click="showEditModal = false" class="btn btn-sm btn-circle btn-ghost text-white/40 hover:text-white hover:bg-white/5">✕</button>
                     </div>
 
-                    <form @submit.prevent="submitEdit()" class="flex flex-col flex-grow overflow-hidden" x-data="{ loading: false }">
+                    <form @submit.prevent="submitEdit($event)" class="flex flex-col flex-grow overflow-hidden" x-data="{ loading: false }">
                         @csrf
                         @method('PATCH')
                         
@@ -508,7 +508,7 @@
                             <input type="text" name="title" x-model="editData.title" class="input w-full bg-white/5 border-white/10 focus:border-warning/50 focus:ring-4 focus:ring-warning/10 rounded-2xl h-16 text-xl font-bold text-white transition-all placeholder:text-white/20" required placeholder="Enter the grand title...">
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-20">
                             <!-- Left Side: Image Upload & Preview -->
                             <div class="md:col-span-2 group">
                                 <label class="label"><span class="label-text font-black text-[10px] uppercase tracking-[0.2em] text-white/40">Cover Image</span></label>
@@ -858,8 +858,6 @@
                         this.showStudentDropdown = false;
                     },
                     openEditModal(book) {
-                        let imageUrl = book.cover_image ? (book.cover_image.startsWith('http') || book.cover_image.startsWith('data:') ? book.cover_image : '/images/' + book.cover_image) : '/images/default-book-cover.png';
-                        
                         this.editData = { 
                             id: book.id,
                             title: book.title,
@@ -867,19 +865,32 @@
                             published_year: book.published_year || '',
                             total_quantity: book.total_quantity,
                             description: book.description || '',
-                            cover_image: imageUrl,
+                            cover_image: book.cover_image,
                             authors: book.authors.map(a => a.id.toString())
                         };
                         this.showEditModal = true;
                     },
 
                     openDetailsModal(book) {
-                        let imageUrl = book.cover_image ? (book.cover_image.startsWith('http') || book.cover_image.startsWith('data:') ? book.cover_image : '/images/' + book.cover_image) : '/images/default-book-cover.png';
-                        this.showData = { ...book, cover_image: imageUrl };
+                        this.showData = { ...book };
                         this.showDetailsModal = true;
                     },
 
-                    async submitCreate() {
+                    async submitCreate(event) {
+                        const form = event.target;
+                        const formData = new FormData(form);
+                        const authors = formData.getAll('authors[]');
+                        
+                        if (authors.length === 0) {
+                            Swal.fire({ 
+                                icon: 'warning', 
+                                title: 'Authors Required', 
+                                text: 'Please select at least one author for this book.',
+                                customClass: { popup: 'rounded-2xl' }
+                            });
+                            return;
+                        }
+
                         this.loading = true;
                         
                         Swal.fire({
@@ -896,32 +907,21 @@
                             }
                         });
 
-                        const formData = new FormData(this.$event.target);
-                        const authors = formData.getAll('authors[]');
-                        
-                        if (authors.length === 0) {
-                            this.loading = false;
-                            Swal.close();
-                            Swal.fire({ 
-                                icon: 'warning', 
-                                title: 'Authors Required', 
-                                text: 'Please select at least one author for this book.',
-                                customClass: { popup: 'rounded-2xl' }
-                            });
-                            return;
-                        }
-                        
                         try {
-                            const response = await fetch('{{ route('books.store') }}', {
+                            const response = await fetch(form.action || '{{ route('books.store') }}', {
                                 method: 'POST',
                                 body: formData,
-                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                headers: { 
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                }
                             });
                             const result = await response.json();
                             
                             if (result.success) {
                                 this.showCreateModal = false;
-                                this.$event.target.reset();
+                                form.reset();
                                 this.createImagePreview = '';
                                 await this.performSearch();
                                 Swal.fire({
@@ -933,16 +933,32 @@
                                     showConfirmButton: false,
                                     timer: 3000
                                 });
+                            } else {
+                                throw new Error(result.message || 'Submission failed');
                             }
                         } catch (error) {
                             console.error('Submission failed:', error);
-                            Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong. Please try again.' });
+                            Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Something went wrong. Please try again.' });
                         } finally {
                             this.loading = false;
                         }
                     },
 
-                    async submitEdit() {
+                    async submitEdit(event) {
+                        const form = event.target;
+                        const formData = new FormData(form);
+                        const authors = formData.getAll('authors[]');
+                        
+                        if (authors.length === 0) {
+                            Swal.fire({ 
+                                icon: 'warning', 
+                                title: 'Authors Required', 
+                                text: 'Please select at least one author for this book.',
+                                customClass: { popup: 'rounded-2xl' }
+                            });
+                            return;
+                        }
+
                         this.loading = true;
 
                         Swal.fire({
@@ -959,26 +975,15 @@
                             }
                         });
 
-                        const formData = new FormData(this.$event.target);
-                        const authors = formData.getAll('authors[]');
-                        
-                        if (authors.length === 0) {
-                            this.loading = false;
-                            Swal.close();
-                            Swal.fire({ 
-                                icon: 'warning', 
-                                title: 'Authors Required', 
-                                text: 'Please select at least one author for this book.',
-                                customClass: { popup: 'rounded-2xl' }
-                            });
-                            return;
-                        }
-                        
                         try {
                             const response = await fetch(`{{ url('books') }}/${this.editData.id}`, {
                                 method: 'POST',
                                 body: formData,
-                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                headers: { 
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                }
                             });
                             const result = await response.json();
                             
@@ -994,10 +999,12 @@
                                     showConfirmButton: false,
                                     timer: 3000
                                 });
+                            } else {
+                                throw new Error(result.message || 'Update failed');
                             }
                         } catch (error) {
                             console.error('Update failed:', error);
-                            Swal.fire({ icon: 'error', title: 'Error', text: 'Update failed. Please try again.' });
+                            Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Update failed. Please try again.' });
                         } finally {
                             this.loading = false;
                         }

@@ -77,6 +77,14 @@ class AuthorController extends Controller
         ]);
 
         $author = Author::create($validated);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Author created successfully.',
+                'author' => $author
+            ]);
+        }
 
         return redirect()->route('authors.index')->with('success', 'Author created successfully.');
     }
@@ -116,6 +124,14 @@ class AuthorController extends Controller
 
         $author->update($validated);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Author updated successfully.',
+                'author' => $author
+            ]);
+        }
+
         return redirect()->route('authors.index')->with('success', 'Author updated successfully.');
     }
 
@@ -125,6 +141,14 @@ class AuthorController extends Controller
     public function destroy(Author $author)
     {
         $author->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Author deleted successfully.'
+            ]);
+        }
+
         return redirect()->route('authors.index')->with('success', 'Author deleted successfully.');
     }
 }

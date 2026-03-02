@@ -288,11 +288,19 @@
         // Mark as shown if any alert was displayed
         if (alertDisplayed) {
             window.authAlertsShown = true;
+            // Also store in sessionStorage for the current session to prevent re-firing on back/forward
+            // especially during Turbo restoration
+            sessionStorage.setItem('lastAlertShown', Date.now());
         }
     }
 
     // Function to initialize alert listeners
     function initAuthAlerts() {
+        // Skip if this is a Turbo preview
+        if (document.documentElement.hasAttribute('data-turbo-preview')) {
+            return;
+        }
+
         // Reset the flag on new page loads (Turbo will re-run this)
         window.authAlertsShown = false;
         
