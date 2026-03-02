@@ -72,10 +72,6 @@ Ensure you have the following installed:
 - **Email**: `test@example.com`
 - **Password**: `password`
 
-### Sample Student PINs
-- Seeded students have a default PIN of `1234` for borrowing books.
-
----
 
 ## ✨ Features
 
