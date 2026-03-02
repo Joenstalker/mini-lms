@@ -48,9 +48,9 @@
                         </svg>
                     </button>
                     <button @click="openEditModal({
-                        id: '{{ $author->id }}',
-                        name: '{{ addslashes($author->name) }}',
-                        bio: '{{ addslashes($author->bio) }}',
+                        id: @js($author->id),
+                        name: @js($author->name),
+                        bio: @js($author->bio),
                         profile_image: @js($author->profile_image)
                     })" class="btn btn-sm btn-ghost bg-warning/10 text-warning hover:bg-warning hover:text-warning-content transition-all duration-300 rounded-xl border border-warning/20 shadow-lg shadow-warning/10" title="Edit Author">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
