@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::table('students', function (Blueprint $table) {
             if (Schema::hasColumn('students', 'pin')) {
+                $table->dropIndex('idx_students_pin');
                 $table->dropColumn('pin');
             }
             if (!Schema::hasColumn('students', 'student_id')) {
