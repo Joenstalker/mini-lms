@@ -1,18 +1,16 @@
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" 
-          x-data="{ 
-          darkMode: localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches), 
-          showProfileModal: false,
-          userData: {
-              name: '{{ Auth::user()->name }}',
-              email: '{{ Auth::user()->email }}',
-              profile_image: '{{ Auth::user()->profile_image }}'
-          }
-      }" 
-      :data-theme="darkMode ? 'dark' : 'light'" 
-      :class="{ 'dark': darkMode }"
-      class="overflow-y-scroll">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="overflow-y-scroll">
     <head>
         <script>
+            @php
+                $currentUser = Auth::user();
+                $userData = $currentUser ? [
+                    'name' => $currentUser->name,
+                    'email' => $currentUser->email,
+                    'profile_image' => $currentUser->profile_image_url,
+                ] : null;
+            @endphp
+            window.currentUserData = {!! json_encode($userData) !!};
+
             (function() {
                 const theme = localStorage.getItem('theme');
                 const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -100,12 +98,22 @@
         </style>
 
         <!-- SweetAlert2 -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased text-base-content min-h-screen selection:bg-primary selection:text-primary-content"
+          x-data="{
+              darkMode: localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches),
+              showProfileModal: false,
+              userData: window.currentUserData || { name: '', email: '', profile_image: '' }
+          }"
+          :data-theme="darkMode ? 'dark' : 'light'"
+          :class="{ 'dark': darkMode }"
           style="background-image: url('{{ asset('images/library-background.png') }}'); background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat;">
 
         {{-- Overlay to keep content readable --}}

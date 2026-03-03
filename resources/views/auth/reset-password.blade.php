@@ -6,7 +6,7 @@
         <p class="text-sm text-white/60 mt-4 text-center">Secure your account with a strong new password.</p>
     </div>
 
-    <form method="POST" action="{{ route('password.store') }}" class="space-y-6" x-data="{ showPassword: false, showConfirm: false }" onsubmit="showLoading('Resetting password...')">
+    <form method="POST" action="{{ route('password.store') }}" class="space-y-6" x-data="{ showPassword: false, showConfirm: false }" onsubmit="showLoading('Resetting password...')" data-turbo="false">
         @csrf
 
         <!-- Password Reset Token -->

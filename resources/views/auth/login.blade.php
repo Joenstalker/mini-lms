@@ -6,7 +6,7 @@
         <div class="w-12 h-1 bg-primary mx-auto mt-4 rounded-full"></div>
     </div>
 
-    <form method="POST" action="{{ route('login') }}" class="space-y-6" x-data="{ showPassword: false }" onsubmit="showLoading('Signing you in...')">
+    <form method="POST" action="{{ route('login') }}" class="space-y-6" x-data="{ showPassword: false }" onsubmit="showLoading('Signing you in...')" data-turbo="false">
         @csrf
 
         {{-- Email --}}
@@ -37,7 +37,7 @@
                 </label>
                 @if (Route::has('password.request'))
                     <a href="{{ route('password.request') }}"
-                       class="text-[10px] font-bold uppercase tracking-widest text-sky-400 hover:text-sky-300 transition-colors">
+                       class="text-[10px] font-bold uppercase tracking-widest text-sky-400 hover:text-sky-300 transition-colors" data-turbo="false">
                         Forgot?
                     </a>
                 @endif
@@ -83,7 +83,7 @@
 
         <div class="mt-8 text-center text-xs text-white/40 font-medium">
             Don't have an account? 
-            <a href="{{ route('register') }}" class="text-sky-400 hover:text-sky-300 font-bold transition-colors">Sign up now</a>
+            <a href="{{ route('register') }}" class="text-sky-400 hover:text-sky-300 font-bold transition-colors" data-turbo="false">Sign up now</a>
         </div>
     </form>
 

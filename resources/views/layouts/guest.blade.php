@@ -1,8 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-      x-data="{ darkMode: localStorage.getItem('theme') === 'dark' }"
-      :data-theme="darkMode ? 'dark' : 'light'"
-      :class="{ 'dark': darkMode }">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,11 +28,6 @@
 
             body { 
                 font-family: 'Outfit', sans-serif;
-                background-image: url('{{ asset('images/login-page-background-photo.png') }}');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                background-attachment: fixed;
                 color: #ffffff;
                 margin: 0;
                 padding: 0;
@@ -140,7 +132,11 @@
             };
         </script>
     </head>
-    <body class="antialiased min-h-screen relative overflow-x-hidden">
+    <body class="antialiased min-h-screen relative overflow-x-hidden"
+          x-data="{ darkMode: localStorage.getItem('theme') === 'dark' }"
+          :data-theme="darkMode ? 'dark' : 'light'"
+          :class="{ 'dark': darkMode }"
+          style="background-image: url('{{ asset('images/login-page-background-photo.png') }}'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;">
 
         {{-- Subtle Dark Overlay --}}
         <div class="absolute inset-0 bg-black/40 z-0"></div>

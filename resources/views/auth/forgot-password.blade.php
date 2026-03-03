@@ -9,7 +9,7 @@
     </div>
 
 
-    <form method="POST" action="{{ route('password.email') }}" class="space-y-6" onsubmit="showLoading('Sending reset link...')">
+    <form method="POST" action="{{ route('password.email') }}" class="space-y-6" onsubmit="showLoading('Sending reset link...')" data-turbo="false">
         @csrf
 
         <!-- Email Address -->
@@ -32,7 +32,7 @@
             <button type="submit" class="btn btn-primary w-full shadow-lg shadow-sky-600/30 hover:shadow-xl hover:shadow-sky-600/40 transition-all duration-300">
                 {{ __('Email Reset Link') }}
             </button>
-            <a href="{{ route('login') }}" class="btn btn-ghost btn-block btn-sm opacity-60">Back to Login</a>
+            <a href="{{ route('login') }}" class="btn btn-ghost btn-block btn-sm opacity-60" data-turbo="false">Back to Login</a>
         </div>
     </form>
 </x-guest-layout>

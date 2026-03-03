@@ -193,7 +193,7 @@
                                             <div class="flex items-center gap-4">
                                                 <div class="avatar shadow-sm border border-white/10 rounded-full overflow-hidden w-10 h-10">
                                                     @if($transaction->student->profile_image)
-                                                        <img src="{{ $transaction->student->profile_image }}" class="w-full h-full object-cover">
+                                                        <img src="{{ $transaction->student->profile_image_url }}" class="w-full h-full object-cover">
                                                     @else
                                                         <div class="bg-primary text-primary-content w-full h-full flex items-center justify-center font-bold text-xs">
                                                             {{ substr($transaction->student->name, 0, 1) }}
@@ -233,8 +233,173 @@
                         </table>
                     </div>
                 </div>
+
+                {{-- Bar Chart Section --}}
+                <div class="glass-card p-8">
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 bg-success/10 rounded-xl flex items-center justify-center text-success">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Library Activity Metrics</h3>
+                    </div>
+                    <div class="h-[300px] w-full">
+                        <canvas id="libraryMetricsChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
+
+
+
+        <script>
+            (function() {
+                function initChart() {
+                    const canvas = document.getElementById('libraryMetricsChart');
+                    if (!canvas) return;
+
+                    // If Chart.js isn't loaded yet, load it dynamically
+                    if (typeof Chart === 'undefined') {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                        script.crossOrigin = 'anonymous';
+                        script.onload = function() { renderChart(canvas); };
+                        document.head.appendChild(script);
+                    } else {
+                        renderChart(canvas);
+                    }
+                }
+
+                function renderChart(canvas) {
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Destroy existing chart instance to prevent memory leaks and hover issues
+                    if (window.libraryMetricsChartInstance) {
+                        window.libraryMetricsChartInstance.destroy();
+                    }
+
+                    // Create gradient for the bars
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(56, 189, 248, 0.6)');   // Primary blue
+                    gradient.addColorStop(1, 'rgba(129, 140, 248, 0.1)');  // Fades to indigo
+
+                    window.libraryMetricsChartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Books', 'Authors', 'Students', 'Transactions', 'Fines (₱)'],
+                            datasets: [{
+                                label: 'Metrics',
+                                data: [
+                                    {{ $stats['total_books'] ?? 0 }},
+                                    {{ $stats['total_authors'] ?? 0 }},
+                                    {{ $stats['total_students'] ?? 0 }},
+                                    {{ $stats['total_transactions'] ?? 0 }},
+                                    {{ $stats['total_fines'] ?? 0 }}
+                                ],
+                                backgroundColor: [
+                                    'rgba(56, 189, 248, 0.3)',
+                                    'rgba(129, 140, 248, 0.3)',
+                                    'rgba(168, 85, 247, 0.3)',
+                                    'rgba(236, 72, 153, 0.3)',
+                                    'rgba(34, 197, 94, 0.3)'
+                                ],
+                                borderColor: [
+                                    '#38bdf8',
+                                    '#818cf8',
+                                    '#a855f7',
+                                    '#ec4899',
+                                    '#22c55e'
+                                ],
+                                borderWidth: 2,
+                                borderRadius: 12,
+                                hoverBackgroundColor: [
+                                    'rgba(56, 189, 248, 0.6)',
+                                    'rgba(129, 140, 248, 0.6)',
+                                    'rgba(168, 85, 247, 0.6)',
+                                    'rgba(236, 72, 153, 0.6)',
+                                    'rgba(34, 197, 94, 0.6)'
+                                ],
+                                hoverBorderWidth: 4,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: 'x',
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                    titleFont: { size: 14, weight: 'bold', family: 'Outfit' },
+                                    bodyFont: { size: 14, family: 'Outfit' },
+                                    padding: 16,
+                                    borderRadius: 16,
+                                    displayColors: false,
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) label += ': ';
+                                            if (context.label === 'Fines (₱)') {
+                                                label += '₱' + context.parsed.y.toLocaleString();
+                                            } else {
+                                                label += context.parsed.y.toLocaleString();
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.05)',
+                                        drawBorder: false
+                                    },
+                                    ticks: {
+                                        color: 'rgba(255, 255, 255, 0.4)',
+                                        font: {
+                                            family: 'Outfit',
+                                            size: 11,
+                                            weight: '600'
+                                        }
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    },
+                                    ticks: {
+                                        color: 'rgba(255, 255, 255, 0.7)',
+                                        font: {
+                                            family: 'Outfit',
+                                            size: 12,
+                                            weight: '700'
+                                        }
+                                    }
+                                }
+                            },
+                            animation: {
+                                duration: 2000,
+                                easing: 'easeOutQuart'
+                            }
+                        }
+                    });
+                }
+
+                // Initialize on Turbo page loads
+                document.addEventListener('turbo:load', initChart);
+                
+                // Cleanup on before-cache to avoid ghost charts
+                document.addEventListener('turbo:before-cache', () => {
+                    if (window.libraryMetricsChartInstance) {
+                        window.libraryMetricsChartInstance.destroy();
+                        window.libraryMetricsChartInstance = null;
+                    }
+                });
+            })();
+        </script>
     <!-- Details Modal -->
     <template x-teleport="body">
         <div class="modal backdrop-blur-md" :class="{ 'modal-open': showDetailsModal }" style="background-color: rgba(0,0,0,0.4); z-index: 1000;">

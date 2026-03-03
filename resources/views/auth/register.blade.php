@@ -5,7 +5,7 @@
         <div class="w-12 h-1 bg-primary mx-auto mt-1 rounded-full"></div>
     </div>
 
-    <form method="POST" action="{{ route('register') }}" class="space-y-2" x-data="{ showPassword: false, showConfirm: false }" onsubmit="showLoading('Creating your account...')">
+    <form method="POST" action="{{ route('register') }}" class="space-y-2" x-data="{ showPassword: false, showConfirm: false }" onsubmit="showLoading('Creating your account...')" data-turbo="false">
         @csrf
 
         <!-- Name -->
@@ -92,7 +92,7 @@
         <div class="mt-4 text-center">
             <p class="text-xs text-white/40 font-medium">
                 Already have an account? 
-                <a href="{{ route('login') }}" class="text-sky-400 hover:text-sky-300 font-bold transition-colors">Sign in here</a>
+                <a href="{{ route('login') }}" class="text-sky-400 hover:text-sky-300 font-bold transition-colors" data-turbo="false">Sign in here</a>
             </p>
         </div>
     </form>

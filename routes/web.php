@@ -32,7 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Admin Users management
-    Route::resource('users', UserController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('users', UserController::class);
 
     // Profile management
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -328,26 +328,4 @@
             setTimeout(showAuthAlerts, 300);
         }
     });
-
-    // Additional fallback: Watch for DOM mutations (handles edge cases)
-    if (typeof MutationObserver !== 'undefined' && !window.domObserver) {
-        window.domObserver = new MutationObserver(function(mutations) {
-            // Check if there are error elements on the page
-            var errorElements = document.querySelectorAll('.error, .text-error, [class*="error"], .invalid-feedback');
-            if (errorElements.length > 0 && !window.authAlertsShown) {
-                // Errors appeared on page but no modal shown yet - retry
-                console.log('DOM errors detected, retrying alerts...');
-                showAuthAlerts();
-            }
-        });
-        
-        // Start observing after DOM is ready
-        if (document.body) {
-            window.domObserver.observe(document.body, { childList: true, subtree: true });
-        } else {
-            document.addEventListener('DOMContentLoaded', function() {
-                window.domObserver.observe(document.body, { childList: true, subtree: true });
-            });
-        }
-    }
 </script>

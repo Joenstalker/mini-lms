@@ -26,6 +26,38 @@ window.openEditModal = function (author) {
     }
 };
 
+window.confirmLogout = async function (event) {
+    event.preventDefault();
+    const form = event.target.closest('form');
+
+    const { isConfirmed } = await Swal.fire({
+        title: 'Sign Out?',
+        text: 'Are you sure you want to end your session?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ff5861',
+        cancelButtonColor: '#355872',
+        confirmButtonText: 'Yes, Sign Out',
+        cancelButtonText: 'Stay Logged In',
+        customClass: {
+            popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+            title: 'text-white font-black',
+        }
+    });
+
+    if (isConfirmed) {
+        Swal.fire({
+            title: 'Signing out...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading(),
+            customClass: {
+                popup: 'rounded-[2rem] bg-slate-900/95 backdrop-blur-xl text-white border border-white/10 shadow-3xl',
+            }
+        });
+        form.submit();
+    }
+};
+
 // Start Turbo Drive - intercepts all link clicks and swaps the <body>
 // without a full page reload.
 Turbo.start();

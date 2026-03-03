@@ -90,19 +90,19 @@
     <div class="p-4 mt-auto transition-all duration-300 px-4">
         <div class="glass rounded-2xl border transition-all duration-300 overflow-hidden p-2 border-white/10">
             <button @click="showProfileModal = true" class="flex items-center gap-3 p-2 justify-start w-full hover:bg-white/10 rounded-xl transition-all duration-300 group cursor-pointer">
-                <div class="avatar @if(!Auth::user()->profile_image) placeholder @endif flex-shrink-0">
-                    <div class="bg-primary text-primary-content font-bold transition-all duration-300 rounded-full w-10 h-10 overflow-hidden">
-                        <template x-if="userData.profile_image">
+                <div class="avatar flex-shrink-0">
+                    <div class="bg-primary text-primary-content font-black transition-all duration-300 rounded-full w-10 h-10 overflow-hidden flex items-center justify-center">
+                        <template x-if="userData && userData.profile_image">
                             <img :src="userData.profile_image" :alt="userData.name" class="w-full h-full object-cover">
                         </template>
-                        <template x-if="!userData.profile_image">
-                            <span x-text="userData.name.charAt(0)"></span>
+                        <template x-if="!userData || !userData.profile_image">
+                            <span x-text="userData && userData.name ? userData.name.charAt(0).toUpperCase() : '?' "></span>
                         </template>
                     </div>
                 </div>
                 <div class="flex flex-col min-w-0 transition-all duration-300 text-left flex-grow">
-                    <span class="text-sm font-bold truncate text-white" x-text="userData.name"></span>
-                    <span class="text-[10px] text-white/50 truncate" x-text="userData.email"></span>
+                    <span class="text-sm font-bold truncate text-white" x-text="userData ? userData.name : 'Administrator'"></span>
+                    <span class="text-[10px] text-white/50 truncate" x-text="userData ? userData.email : 'Loading...'"></span>
                 </div>
                 <svg class="w-4 h-4 text-white/30 group-hover:text-white/70 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -111,7 +111,7 @@
 
             <!-- Visible Logout Button -->
             <div class="px-2 pb-2 mt-1">
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" data-turbo="false">
                     @csrf
                     <button type="button" 
                             onclick="confirmLogout(event)"

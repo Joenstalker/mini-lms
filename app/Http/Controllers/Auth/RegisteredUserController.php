@@ -43,9 +43,7 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false))
-            ->with('success_message', 'Account created! Welcome to Mini-LMS, ' . $user->name . '!');
+        return redirect(route('login', absolute: false))
+            ->with('success_message', 'Account created successfully! Please sign in with your new credentials, ' . $user->name . '.');
     }
 }

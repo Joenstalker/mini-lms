@@ -19,6 +19,7 @@ class UserController extends Controller
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             })
+            ->orderByRaw('id = ? DESC', [Auth::id()])
             ->latest()
             ->get();
 
@@ -27,6 +28,11 @@ class UserController extends Controller
         }
 
         return view('users.index', compact('users', 'search'));
+    }
+
+    public function create()
+    {
+        return view('users.create');
     }
 
     public function store(Request $request)
@@ -57,6 +63,53 @@ class UserController extends Controller
                 return response()->json(['message' => 'Failed to create admin account.'], 500);
             }
             return redirect()->back()->with('error', 'Failed to create admin account: ' . $e->getMessage());
+        }
+    }
+
+    public function show(User $user, Request $request)
+    {
+        if ($request->ajax()) {
+            return view('users.show_content', compact('user'));
+        }
+        return view('users.show', compact('user'));
+    }
+
+    public function edit(User $user)
+    {
+        return view('users.edit', compact('user'));
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $request->validate([
+            'name'  => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+        ]);
+
+        try {
+            $user->name = $request->name;
+            $user->email = $request->email;
+
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+            }
+
+            $user->save();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => "Admin account for {$user->name} updated successfully.",
+                    'user'    => $user,
+                ]);
+            }
+
+            return redirect()->route('users.index')->with('success', "Admin account for {$user->name} updated.");
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json(['message' => 'Failed to update admin account.'], 500);
+            }
+            return redirect()->back()->with('error', 'Failed to update admin account: ' . $e->getMessage());
         }
     }
 

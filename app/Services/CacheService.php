@@ -20,7 +20,10 @@ class CacheService
         return Cache::remember('dashboard_stats', self::CACHE_DURATION, function () {
             return [
                 'total_books' => DB::table('books')->count(),
+                'total_authors' => DB::table('authors')->count(),
                 'total_students' => DB::table('students')->count(),
+                'total_transactions' => DB::table('borrow_transactions')->count(),
+                'total_fines' => (float) DB::table('borrow_transactions')->sum('fine_amount'),
                 'active_borrows' => DB::table('borrow_transactions')
                     ->whereIn('status', ['borrowed', 'partially_returned'])
                     ->count(),
